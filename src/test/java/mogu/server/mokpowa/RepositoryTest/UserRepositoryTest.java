@@ -1,6 +1,7 @@
 package mogu.server.mokpowa.RepositoryTest;
 
 
+import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.entity.UserInfo;
 import mogu.server.mokpowa.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -21,5 +22,11 @@ class UserRepositoryTest {
         UserInfo user = new UserInfo(TEST_USER_EMAIL, TEST_USER_NAME, "01012341234", "123qwe");
 
         userRepository.insertUser(user);
+    }
+
+    @Test
+    void getUserDatail_Test() throws Exception {
+        User finduser = userRepository.getUserDetail(TEST_USER_EMAIL);
+        System.out.println(finduser.getUserEmail() + ", " + finduser.getUserName() + ", " + finduser.getPhoneNumber());
     }
 }

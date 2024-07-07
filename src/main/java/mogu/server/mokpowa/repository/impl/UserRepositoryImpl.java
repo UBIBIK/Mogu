@@ -6,6 +6,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
+import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.entity.UserInfo;
 import org.springframework.stereotype.Service;
 import mogu.server.mokpowa.repository.UserRepository;
@@ -25,7 +26,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
 
         // 파이어베이스에 동일한 userEmail을 가진 사용자가 있는지 확인
-        DocumentReference docRef = firestore.collection(COLLECTION_NAME).document(user.getEmail());
+        DocumentReference docRef = firestore.collection(COLLECTION_NAME).document(user.getUserEmail());
         ApiFuture<DocumentSnapshot> futureSnapshot = docRef.get();
         DocumentSnapshot documentSnapshot = futureSnapshot.get();
 
@@ -38,6 +39,19 @@ public class UserRepositoryImpl implements UserRepository {
         ApiFuture<WriteResult> future = docRef.set(user);
 
         // 정상적으로 해당 유저가 저장되면 사용자의 이메일 반환
-        return user.getEmail();
+        return user.getUserEmail();
+    }
+    // 사용자 정보 조회
+    @Override
+    public User getUserDetail(String email) throws Exception {
+        DocumentReference documentReference =
+                firestore.collection(COLLECTION_NAME).document(email);
+        ApiFuture<DocumentSnapshot> apiFuture = documentReference.get();
+        DocumentSnapshot documentSnapshot = apiFuture.get();
+        if(documentSnapshot.exists()){
+            return documentSnapshot.toObject(User.class);
+        } else {
+            throw new Exception("해당하는 유저가 존재하지 않습니다.");
+        }
     }
 }

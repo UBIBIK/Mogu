@@ -6,17 +6,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserInfo {
-    private String email;
-    private String name;
-    private String password;
-    private String phone;
+    private String status;
+    private String groupKey;
+    private String userEmail;
+    private String userName;
+    private String phoneNumber;
 
     public UserInfo() {}
 
-    public UserInfo(String email, String name, String password, String phone) {
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.phone = phone;
+    public UserInfo(String groupKey, String userEmail, String phoneNumber, String userName) {
+        this.groupKey = groupKey;
+        this.userEmail = userEmail;
+        this.phoneNumber = phoneNumber;
+        this.userName = userName;
     }
 }

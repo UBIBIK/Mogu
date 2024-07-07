@@ -43,13 +43,13 @@ public class UserRepositoryImpl implements UserRepository {
     }
     // 사용자 정보 조회
     @Override
-    public User getUserDetail(String email) throws Exception {
+    public UserInfo getUserDetail(String email) throws Exception {
         DocumentReference documentReference =
                 firestore.collection(COLLECTION_NAME).document(email);
         ApiFuture<DocumentSnapshot> apiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = apiFuture.get();
         if(documentSnapshot.exists()){
-            return documentSnapshot.toObject(User.class);
+            return documentSnapshot.toObject(UserInfo.class);
         } else {
             throw new Exception("해당하는 유저가 존재하지 않습니다.");
         }

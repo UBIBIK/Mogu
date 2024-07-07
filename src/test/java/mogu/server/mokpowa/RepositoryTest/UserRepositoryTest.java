@@ -1,7 +1,6 @@
 package mogu.server.mokpowa.RepositoryTest;
 
 
-import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.entity.UserInfo;
 import mogu.server.mokpowa.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,7 @@ class UserRepositoryTest {
 
     @Test
     void getUserDatail_Test() throws Exception {
-        User finduser = userRepository.getUserDetail(TEST_USER_EMAIL);
-        System.out.println(finduser.getUserEmail() + ", " + finduser.getUserName() + ", " + finduser.getPhoneNumber());
+        UserInfo finduser = userRepository.getUserDetail(TEST_USER_EMAIL);
+        System.out.println(finduser.getUserEmail() + ", " + finduser.getUserName() + ", " + finduser.getPasword());
     }
 }

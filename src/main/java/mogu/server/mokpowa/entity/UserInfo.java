@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class UserInfo {
     private String userEmail;
-    private String Pasword;
+    private String password;
     private String userName;
     private String phoneNumber;
 
@@ -17,6 +17,6 @@ public class UserInfo {
         this.userEmail = userEmail;
         this.phoneNumber = phoneNumber;
         this.userName = userName;
-        this.Pasword = password;
+        this.password = password;
     }
 }

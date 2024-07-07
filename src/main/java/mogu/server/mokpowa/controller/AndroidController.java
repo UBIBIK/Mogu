@@ -42,7 +42,7 @@ public class AndroidController {
         log.info("입력받은 비밀번호 = {}", loginUser.getUserEmail());
 
         UserInfo finduser = userRepository.getUserDetail(loginUser.getUserEmail());
-        if(finduser.getPasword().equals(loginUser.getPasword())) {
+        if(finduser.getPassword().equals(loginUser.getPassword())) {
             log.info("사용자 로그인 성공 : {}", finduser.getUserName());
             return ResponseEntity.ok(finduser); // 로그인 성공
         }

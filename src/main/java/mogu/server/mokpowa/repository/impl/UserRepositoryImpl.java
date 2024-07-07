@@ -41,6 +41,7 @@ public class UserRepositoryImpl implements UserRepository {
         // 정상적으로 해당 유저가 저장되면 사용자의 이메일 반환
         return user.getUserEmail();
     }
+
     // 사용자 정보 조회
     @Override
     public UserInfo getUserDetail(String email) throws Exception {

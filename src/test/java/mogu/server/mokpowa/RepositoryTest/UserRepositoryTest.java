@@ -26,6 +26,6 @@ class UserRepositoryTest {
     @Test
     void getUserDatail_Test() throws Exception {
         UserInfo finduser = userRepository.getUserDetail(TEST_USER_EMAIL);
-        System.out.println(finduser.getUserEmail() + ", " + finduser.getUserName() + ", " + finduser.getPasword());
+        System.out.println(finduser.getUserEmail() + ", " + finduser.getUserName() + ", " + finduser.getPassword());
     }
 }

@@ -1,6 +1,7 @@
 package com.example.mogu.screen;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -86,6 +87,13 @@ public class GroupFragment extends Fragment {
                 if (response.isSuccessful()) {
                     UserInfo updatedUserInfo = response.body();
                     sharedPreferencesHelper.saveUserInfo(updatedUserInfo);
+
+                    // 서버에서 받아온 UserInfo 객체의 정보를 로그로 출력
+                    Log.d("UserInfo", "Email: " + updatedUserInfo.getUserEmail());
+                    Log.d("UserInfo", "Name: " + updatedUserInfo.getUserName());
+                    Log.d("UserInfo", "Phone Number: " + updatedUserInfo.getPhoneNumber());
+                    Log.d("UserInfo", "Group Keys: " + updatedUserInfo.getGroupKeyList().toString());
+
                     Toast.makeText(getContext(), "그룹 생성 성공", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getContext(), "그룹 생성 실패: " + response.message(), Toast.LENGTH_SHORT).show();

@@ -3,8 +3,11 @@ package com.example.mogu.screen;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,6 +18,7 @@ import com.example.mogu.R;
 import com.example.mogu.object.TourApi;
 import com.example.mogu.custom.MyAdapter;
 import com.example.mogu.custom.TourAdapter;
+import com.example.mogu.share.SharedPreferencesHelper;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -23,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+
 import me.relex.circleindicator.CircleIndicator3;
 
 public class Home extends AppCompatActivity {
@@ -46,6 +51,7 @@ public class Home extends AppCompatActivity {
     private CircleIndicator3 indicator;
     private static final String TAG = "Home";
     private RecyclerView rcTourList;
+    private SharedPreferencesHelper sharedPreferencesHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,65 +90,10 @@ public class Home extends AppCompatActivity {
                 "&sigunguCode=" + SIGUNGU_CODE +
                 "&listYN=" + LIST_YN;
 
-
-        Button boardButton = findViewById(R.id.BoardButton);
-        Button groupButton = findViewById(R.id.GroupButton);
-        Button homeButton = findViewById(R.id.HomeButton);
-        Button mapButton = findViewById(R.id.MapButton);
-        Button mypageButton = findViewById(R.id.MypageButton);
-
-        boardButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Home.this, Home.class);
-                startActivity(intent);
-
-            }
-        });
-
-
-        groupButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Home.this, Home.class);
-                startActivity(intent);
-            }
-        });
-
-
-        homeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Home.this, Home.class);
-                startActivity(intent);
-            }
-        });
-
-
-        mapButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Home.this, Home.class);
-                startActivity(intent);
-            }
-        });
-
-
-        mypageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Home.this, Home.class);
-                startActivity(intent);
-            }
-        });
-
-
-        fetchXML(requestUrl,CONTENT_TYPE_ID);
-        fetchXML(requestUrl2,CONTENT_TYPE_ID2);
+        fetchXML(requestUrl, CONTENT_TYPE_ID);
+        fetchXML(requestUrl2, CONTENT_TYPE_ID2);
 
     }
-
-
 
     // xml 파싱
     private void fetchXML(String url, int num) {
@@ -167,7 +118,6 @@ public class Home extends AppCompatActivity {
                 }
                 return null;
             }
-
 
             // 읽은 데이터 파싱해서 출력
             @Override
@@ -230,8 +180,6 @@ public class Home extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-
 
                 if(num == 15){
                     myadapter = new MyAdapter(itemList);

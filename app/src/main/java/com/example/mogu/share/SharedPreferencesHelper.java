@@ -34,4 +34,11 @@ public class SharedPreferencesHelper {
         String phone = sharedPreferences.getString(KEY_USER_PHONE, "");
         return new UserInfo(email, name, password, phone);
     }
+
+    public void clearUserInfo() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.apply();
+    }
+
 }

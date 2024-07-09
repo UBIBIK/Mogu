@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         if (savedUser.getUserEmail() != null && !savedUser.getUserEmail().isEmpty()) {
             // 자동 로그인 또는 저장된 사용자 정보로 작업을 수행
             Toast.makeText(this, "자동 로그인: " + savedUser.getUserName(), Toast.LENGTH_SHORT).show();
-            loginWithSavedUser(savedUser);
+            //TODO:자동로그인 해제 해둔거 나중에 주석 풀기 loginWithSavedUser(savedUser);
         }
 
         // 로그인 버튼 클릭 리스너 설정
@@ -144,9 +144,9 @@ public class MainActivity extends AppCompatActivity {
         stopService(intent);
     }
 
-    // GroupActivity로 이동
+    // Home 이동
     private void navigateToGroupActivity() {
-        Intent intent = new Intent(MainActivity.this, GroupActivity.class);
+        Intent intent = new Intent(MainActivity.this, Home.class);
         startActivity(intent);
         finish(); // 현재 액티비티를 종료하여 뒤로 가기 버튼으로 돌아오지 않게 합니다.
     }

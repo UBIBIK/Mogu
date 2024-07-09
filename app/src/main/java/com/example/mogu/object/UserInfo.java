@@ -1,4 +1,4 @@
-package com.example.mogu;
+package com.example.mogu.object;
 
 public class UserInfo {
     private String userEmail;

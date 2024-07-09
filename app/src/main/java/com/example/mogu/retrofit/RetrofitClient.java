@@ -1,4 +1,4 @@
-package com.example.mogu;
+package com.example.mogu.retrofit;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

@@ -1,4 +1,6 @@
-package com.example.mogu;
+package com.example.mogu.retrofit;
+
+import com.example.mogu.object.UserInfo;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

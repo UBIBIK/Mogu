@@ -16,12 +16,12 @@
         android:roundIcon="@drawable/logo_reverse"
         android:supportsRtl="true"
         android:theme="@style/Theme.Mogu"
-        android:name=".GlobalApplication"
+        android:name=".kakao.GlobalApplication"
         tools:targetApi="31">
 
         <!-- MainActivity 설정 -->
         <activity
-            android:name=".MainActivity"
+            android:name=".screen.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,9 +30,9 @@
         </activity>
 
         <!-- SignUp 화면으로 가기 위한 설정 추가 -->
-        <activity android:name=".SignUp"></activity>
+        <activity android:name=".screen.SignUp"></activity>
         <!-- GroupActivity 화면으로 가기 위한 설정 추가 -->
-        <activity android:name=".GroupActivity"></activity>
+        <activity android:name=".screen.GroupActivity"></activity>
 
         <!-- Kakao SDK 초기화를 위한 설정 -->
         <meta-data
@@ -52,7 +52,7 @@
         </activity>
 
         <!-- WebSocketService 등록 -->
-        <service android:name=".WebSocketService"
+        <service android:name=".websocket.WebSocketService"
             android:exported="false" />
     </application>
 

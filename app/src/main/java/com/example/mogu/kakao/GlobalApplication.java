@@ -1,4 +1,4 @@
-package com.example.mogu;
+package com.example.mogu.kakao;
 
 import android.app.Application;
 import com.kakao.sdk.common.KakaoSdk;

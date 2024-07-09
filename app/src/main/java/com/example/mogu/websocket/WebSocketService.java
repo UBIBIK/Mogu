@@ -1,4 +1,4 @@
-package com.example.mogu;
+package com.example.mogu.websocket;
 
 import android.app.Service;
 import android.content.Intent;

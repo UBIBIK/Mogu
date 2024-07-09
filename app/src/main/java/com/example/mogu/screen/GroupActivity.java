@@ -1,4 +1,4 @@
-package com.example.mogu;
+package com.example.mogu.screen;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -11,6 +11,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.mogu.custom.GroupAdapter;
+import com.example.mogu.R;
+import com.example.mogu.share.SharedPreferencesHelper;
+import com.example.mogu.object.UserInfo;
+import com.example.mogu.retrofit.ApiService;
+import com.example.mogu.retrofit.RetrofitClient;
 
 import retrofit2.Call;
 import retrofit2.Callback;

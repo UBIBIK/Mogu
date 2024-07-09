@@ -1,14 +1,19 @@
-package com.example.mogu;
+package com.example.mogu.screen;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.mogu.R;
+import com.example.mogu.share.SharedPreferencesHelper;
+import com.example.mogu.object.UserInfo;
+import com.example.mogu.websocket.WebSocketService;
+import com.example.mogu.retrofit.ApiService;
+import com.example.mogu.retrofit.RetrofitClient;
 import com.kakao.sdk.common.util.Utility;
 
 import retrofit2.Call;
@@ -136,6 +141,5 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopWebSocketService();
     }
 }

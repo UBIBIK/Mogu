@@ -33,14 +33,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // 카카오 SDK를 이용해 키 해시를 로그에 출력
         String keyHash = Utility.INSTANCE.getKeyHash(this);
         Log.d("KeyHash", keyHash);
 
+        // 뷰 초기화
         initializeViews();
 
+        // SharedPreferencesHelper 및 ApiService 초기화
         sharedPreferencesHelper = new SharedPreferencesHelper(this);
         apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
 
+        // 저장된 사용자 정보가 있을 경우 자동 로그인 시도
         UserInfo savedUser = sharedPreferencesHelper.getUserInfo();
         if (savedUser.getUserEmail() != null && !savedUser.getUserEmail().isEmpty()) {
             // 자동 로그인 또는 저장된 사용자 정보로 작업을 수행
@@ -48,16 +52,19 @@ public class MainActivity extends AppCompatActivity {
             loginWithSavedUser(savedUser);
         }
 
+        // 로그인 버튼 클릭 리스너 설정
         findViewById(R.id.loginButton).setOnClickListener(v -> loginUser(
                 usernameEditText.getText().toString(),
                 passwordEditText.getText().toString()
         ));
 
+        // 회원가입 버튼 클릭 리스너 설정
         findViewById(R.id.signupButton).setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SignUp.class);
             startActivity(intent);
         });
 
+        // ID/PW 찾기 버튼 클릭 리스너 설정 (현재 주석 처리됨)
         findViewById(R.id.findIdPwButton).setOnClickListener(v -> {
             // ID/PW 찾기 화면으로 이동
             // Intent intent = new Intent(MainActivity.this, FindIdPwActivity.class);
@@ -65,11 +72,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // 뷰 초기화 메서드
     private void initializeViews() {
         usernameEditText = findViewById(R.id.usernameEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
     }
 
+    // 저장된 사용자 정보로 로그인 시도
     private void loginWithSavedUser(UserInfo userInfo) {
         apiService.login(userInfo).enqueue(new Callback<UserInfo>() {
             @Override
@@ -95,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // 사용자 입력 정보로 로그인 시도
     private void loginUser(String email, String password) {
         UserInfo userInfo = new UserInfo(email, "", password, "");
 
@@ -122,16 +132,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // WebSocketService 시작
     private void startWebSocketService() {
         Intent intent = new Intent(this, WebSocketService.class);
         startService(intent);
     }
 
+    // WebSocketService 종료
     private void stopWebSocketService() {
         Intent intent = new Intent(this, WebSocketService.class);
         stopService(intent);
     }
 
+    // GroupActivity로 이동
     private void navigateToGroupActivity() {
         Intent intent = new Intent(MainActivity.this, GroupActivity.class);
         startActivity(intent);

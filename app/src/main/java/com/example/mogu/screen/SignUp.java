@@ -34,7 +34,7 @@ public class SignUp extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_up);
 
-        // Initialize views
+        // 뷰 초기화
         emailEditText = findViewById(R.id.emailEditText);
         nameEditText = findViewById(R.id.nameEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
@@ -42,7 +42,7 @@ public class SignUp extends AppCompatActivity {
         phoneEditText = findViewById(R.id.phoneEditText);
         signupButton = findViewById(R.id.signupButton);
 
-        // Set up button listener
+        // 버튼 클릭 리스너 설정
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,6 +51,7 @@ public class SignUp extends AppCompatActivity {
         });
     }
 
+    // 회원가입 처리 메서드
     private void handleSignup() {
         String email = emailEditText.getText().toString().trim();
         String name = nameEditText.getText().toString().trim();
@@ -58,11 +59,13 @@ public class SignUp extends AppCompatActivity {
         String confirmPassword = confirmPasswordEditText.getText().toString().trim();
         String phone = phoneEditText.getText().toString().trim();
 
+        // 모든 필드를 입력했는지 확인
         if (email.isEmpty() || name.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || phone.isEmpty()) {
             Toast.makeText(SignUp.this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // 비밀번호와 비밀번호 확인이 일치하는지 확인
         if (!password.equals(confirmPassword)) {
             Toast.makeText(SignUp.this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show();
             return;
@@ -79,7 +82,7 @@ public class SignUp extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     Log.d(TAG, "회원가입 성공: " + response.body());
                     Toast.makeText(SignUp.this, "회원가입 성공!", Toast.LENGTH_SHORT).show();
-                    finish();
+                    finish(); // 회원가입 성공 후 현재 액티비티 종료
                 } else {
                     Log.e(TAG, "회원가입 실패: " + response.message());
                     Toast.makeText(SignUp.this, "회원가입 실패: " + response.message(), Toast.LENGTH_SHORT).show();

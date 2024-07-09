@@ -9,10 +9,15 @@ import java.util.Map;
 @Getter
 @Setter
 public class Group {
-    private String groupName;
     private String groupKey;
-    private String groupMaster;
+    private String groupName;
+    private String groupMaterEmail;
     private ArrayList<Map<String, Object>> groupMember = new ArrayList<>();
 
     public Group() {}
+
+    public Group(String groupName, String groupKey) {
+        this.groupName = groupName + "의 그룹";
+        this.groupKey = groupKey;
+    }
 }

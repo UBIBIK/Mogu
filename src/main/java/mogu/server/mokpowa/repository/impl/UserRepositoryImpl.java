@@ -1,16 +1,15 @@
 package mogu.server.mokpowa.repository.impl;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.entity.UserInfo;
 import org.springframework.stereotype.Service;
 import mogu.server.mokpowa.repository.UserRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -54,5 +53,24 @@ public class UserRepositoryImpl implements UserRepository {
         } else {
             throw new Exception("해당하는 유저가 존재하지 않습니다.");
         }
+    }
+
+    // 사용자 정보 수정
+    @Override
+    public String updateUser(User user) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> future = firestore.collection(COLLECTION_NAME).document(user.getUserEmail()).set(user);
+        return future.get().getUpdateTime().toString();
+    }
+
+    // 모든 사용자 조회
+    @Override
+    public  List<User> getUsers() throws Exception {
+        List<User> list = new ArrayList<>();
+        ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).get();
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        for (QueryDocumentSnapshot document : documents) {
+            list.add(document.toObject(User.class));
+        }
+        return list;
     }
 }

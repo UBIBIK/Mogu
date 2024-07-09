@@ -3,6 +3,9 @@ package mogu.server.mokpowa.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 public class UserInfo {
@@ -10,6 +13,8 @@ public class UserInfo {
     private String password;
     private String userName;
     private String phoneNumber;
+    private List<String> groupKeyList = new ArrayList<>();
+
 
     public UserInfo() {}
 

@@ -1,32 +1,24 @@
 package com.example.mogu;
 
 public class UserInfo {
-    private String email;
-    private String name;
+    private String userEmail;
     private String password;
-    private String phone;
+    private String userName;
+    private String phoneNumber;
 
-    public UserInfo(String email, String name, String password, String phone) {
-        this.email = email;
-        this.name = name;
+    public UserInfo(String userEmail, String userName, String password, String phoneNumber) {
+        this.userEmail = userEmail;
+        this.userName = userName;
         this.password = password;
-        this.phone = phone;
+        this.phoneNumber = phoneNumber;
     }
 
-    public String getEmail() {
-        return email;
+    public String getUserEmail() {
+        return userEmail;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 
     public String getPassword() {
@@ -37,11 +29,19 @@ public class UserInfo {
         this.password = password;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

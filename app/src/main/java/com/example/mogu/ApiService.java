@@ -7,4 +7,10 @@ import retrofit2.http.POST;
 public interface ApiService {
     @POST("/api/signup")
     Call<String> signup(@Body UserInfo user);
+
+    @POST("/login")
+    Call<UserInfo> login(@Body UserInfo user);
+
+    @POST("/group-create")
+    Call<UserInfo> createGroup(@Body UserInfo user);
 }

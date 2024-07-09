@@ -1,15 +1,14 @@
 package com.example.mogu.screen;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
+import android.view.ViewGroup;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -18,10 +17,10 @@ import com.example.mogu.R;
 import com.example.mogu.object.TourApi;
 import com.example.mogu.custom.MyAdapter;
 import com.example.mogu.custom.TourAdapter;
-import com.example.mogu.share.SharedPreferencesHelper;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -30,9 +29,8 @@ import java.util.ArrayList;
 
 import me.relex.circleindicator.CircleIndicator3;
 
-public class Home extends AppCompatActivity {
+public class HomeFragment extends Fragment {
 
-    // Api 요소 설정
     private static final int NUM_OF_ROWS = 10;
     private static final int PAGE_NO = 1;
     private static final String MOBILE_OS = "AND";
@@ -42,32 +40,27 @@ public class Home extends AppCompatActivity {
     private static final int CONTENT_TYPE_ID = 15;
     private static final int CONTENT_TYPE_ID2 = 12;
     private static final int AREA_CODE = 38;
-    private static final int SIGUNGU_CODE = 8 ;
+    private static final int SIGUNGU_CODE = 8;
     private static final String SERVICE_URL = "http://api.visitkorea.or.kr/openapi/service/rest/KorService/areaBasedList";
     private static final String SERVICE_KEY = "iYq%2FBTYJSMKmITGfxxEBnluf6wJSfDjyGv8HUQJCYnqLkGKt%2BGTq4mNkwGDB5gEofiE34ur%2Fen1s7Nq1xWuLeg%3D%3D";
+
     private ViewPager2 viewPager;
-    private MyAdapter myadapter;
+    private MyAdapter myAdapter;
     private TourAdapter tourAdapter;
     private CircleIndicator3 indicator;
-    private static final String TAG = "Home";
     private RecyclerView rcTourList;
-    private SharedPreferencesHelper sharedPreferencesHelper;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.home);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.home, container, false);
 
-        viewPager = findViewById(R.id.viewpager); // 배너용 viewPager
-        indicator = findViewById(R.id.indicator);
+        viewPager = view.findViewById(R.id.viewpager);
+        indicator = view.findViewById(R.id.indicator);
+        rcTourList = view.findViewById(R.id.recyclerView);
+        rcTourList.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        rcTourList = findViewById(R.id.recyclerView);
-        rcTourList.setLayoutManager(new LinearLayoutManager(this));
-
-
-        String[] contentTypes = {String.valueOf(CONTENT_TYPE_ID), String.valueOf(CONTENT_TYPE_ID2)};
-        // Api키 요청 항목
-        String requestUrl = SERVICE_URL +
+        String requestUrl1 = SERVICE_URL +
                 "?serviceKey=" + SERVICE_KEY +
                 "&pageNo=" + PAGE_NO +
                 "&numOfRows=" + NUM_OF_ROWS +
@@ -78,6 +71,7 @@ public class Home extends AppCompatActivity {
                 "&areaCode=" + AREA_CODE +
                 "&sigunguCode=" + SIGUNGU_CODE +
                 "&listYN=" + LIST_YN;
+
         String requestUrl2 = SERVICE_URL +
                 "?serviceKey=" + SERVICE_KEY +
                 "&pageNo=" + PAGE_NO +
@@ -90,17 +84,16 @@ public class Home extends AppCompatActivity {
                 "&sigunguCode=" + SIGUNGU_CODE +
                 "&listYN=" + LIST_YN;
 
-        fetchXML(requestUrl, CONTENT_TYPE_ID);
+        fetchXML(requestUrl1, CONTENT_TYPE_ID);
         fetchXML(requestUrl2, CONTENT_TYPE_ID2);
 
+        return view;
     }
 
-    // xml 파싱
-    private void fetchXML(String url, int num) {
+    private void fetchXML(String url, int contentTypeId) {
         class GetDangerGrade extends AsyncTask<Void, Void, Void> {
             private String page;
 
-            // xml 데이터 가져와서 파싱
             @Override
             protected Void doInBackground(Void... voids) {
                 try {
@@ -119,7 +112,6 @@ public class Home extends AppCompatActivity {
                 return null;
             }
 
-            // 읽은 데이터 파싱해서 출력
             @Override
             protected void onPostExecute(Void result) {
                 super.onPostExecute(result);
@@ -158,11 +150,11 @@ public class Home extends AppCompatActivity {
                                 title = xpp.getText();
                                 tagTitle = false;
                             }
-                            if (tagAddr1){
+                            if (tagAddr1) {
                                 addr1 = xpp.getText();
                                 tagAddr1 = false;
                             }
-                            if (tagAddr2){
+                            if (tagAddr2) {
                                 addr2 = xpp.getText();
                                 tagAddr2 = false;
                             }
@@ -181,12 +173,11 @@ public class Home extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                if(num == 15){
-                    myadapter = new MyAdapter(itemList);
-                    viewPager.setAdapter(myadapter);
+                if (contentTypeId == CONTENT_TYPE_ID) {
+                    myAdapter = new MyAdapter(itemList);
+                    viewPager.setAdapter(myAdapter);
                     indicator.setViewPager(viewPager);
-                }
-                else if(num == 12) {
+                } else if (contentTypeId == CONTENT_TYPE_ID2) {
                     tourAdapter = new TourAdapter(itemList);
                     rcTourList.setAdapter(tourAdapter);
                 }

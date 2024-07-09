@@ -29,13 +29,9 @@
             </intent-filter>
         </activity>
 
-        <!-- Home 화면 설정 추가 -->
-        <activity android:name=".screen.Home"></activity>
-
         <!-- SignUp 화면으로 가기 위한 설정 추가 -->
         <activity android:name=".screen.SignUp"></activity>
-        <!-- GroupActivity 화면으로 가기 위한 설정 추가 -->
-        <activity android:name=".screen.GroupActivity"></activity>
+        <activity android:name=".screen.HomeActivity"></activity>
 
         <!-- Kakao SDK 초기화를 위한 설정 -->
         <meta-data

@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Home 이동
     private void navigateToGroupActivity() {
-        Intent intent = new Intent(MainActivity.this, Home.class);
+        Intent intent = new Intent(MainActivity.this, HomeActivity.class);
         startActivity(intent);
         finish(); // 현재 액티비티를 종료하여 뒤로 가기 버튼으로 돌아오지 않게 합니다.
     }

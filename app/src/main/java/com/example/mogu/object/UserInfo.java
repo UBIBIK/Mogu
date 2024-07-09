@@ -1,10 +1,13 @@
 package com.example.mogu.object;
 
+import java.util.ArrayList;
+
 public class UserInfo {
     private String userEmail;
     private String password;
     private String userName;
     private String phoneNumber;
+    private ArrayList<String> groupKeyList = new ArrayList<>();
 
     public UserInfo(String userEmail, String userName, String password, String phoneNumber) {
         this.userEmail = userEmail;
@@ -44,4 +47,8 @@ public class UserInfo {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public ArrayList<String> getGroupKeyList() { return groupKeyList; }
+
+    public void setGroupKeyList(ArrayList<String> groupKeyList) { this.groupKeyList = groupKeyList; }
 }

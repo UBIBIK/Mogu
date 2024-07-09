@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomCircleIndicator">
+        <item name="ci_drawable">@drawable/custom_indicator_drawable</item>
+        <item name="ci_drawable_unselected">@drawable/custom_indicator_drawable_unselected</item>
+    </style>
+</resources>

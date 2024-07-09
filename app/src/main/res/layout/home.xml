@@ -1,0 +1,115 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:gravity="bottom"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".screen.Home">
+
+
+
+    <FrameLayout
+        android:layout_gravity="top"
+        android:layout_width="match_parent"
+        android:layout_height="800dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginHorizontal="15dp">
+
+        <TextView
+            android:id="@+id/upper_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="목포축제공연행사"
+            android:textSize="18sp"
+            android:textColor="#48BBED"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="220dp"
+            android:textStyle="bold"/>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            android:layout_gravity="top"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:layout_marginTop="45dp"
+            android:scaleType="fitXY" />
+
+        <me.relex.circleindicator.CircleIndicator3
+            android:id="@+id/indicator"
+            android:layout_width="match_parent"
+            android:layout_gravity="top"
+            android:layout_marginTop="370dp"
+            android:layout_height="48dp"
+            app:ci_drawable="@drawable/custom_indicator_drawable"
+            app:ci_drawable_unselected="@drawable/custom_indicator_drawable_unselected" />
+
+        <TextView
+        android:id="@+id/lower_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="80dp"
+        android:text="목포관광지"
+        android:textSize="18sp"
+        android:textColor="#48BBED"
+        android:layout_marginTop="360dp"
+        android:layout_marginBottom="16dp"
+        android:textStyle="bold"
+            />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="470dp"
+            android:orientation="vertical" />
+    </FrameLayout>
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <Button
+            android:id="@+id/BoardButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/board_button"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/GroupButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/group_button"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/HomeButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/home_button"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/MapButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/map_button"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/MypageButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/mypage_button"
+            android:layout_weight="1" />
+    </LinearLayout>
+</LinearLayout>

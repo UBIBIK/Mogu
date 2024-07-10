@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
 import com.example.mogu.custom.GroupAdapter;
+import com.example.mogu.object.CreateGroupRequest;
 import com.example.mogu.object.UserInfo;
 import com.example.mogu.retrofit.ApiService;
 import com.example.mogu.retrofit.RetrofitClient;
@@ -64,7 +66,7 @@ public class GroupFragment extends Fragment {
                 .setItems(new String[]{"그룹 생성", "그룹 참가"}, (dialog, which) -> {
                     switch (which) {
                         case 0:
-                            createGroup();
+                            showGroupNameInputDialog();
                             break;
                         case 1:
                             Toast.makeText(getContext(), "그룹 참가 선택", Toast.LENGTH_SHORT).show();
@@ -74,14 +76,39 @@ public class GroupFragment extends Fragment {
         builder.create().show();
     }
 
-    private void createGroup() {
+    private void showGroupNameInputDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("그룹 이름 입력");
+
+        // 그룹 이름 입력 필드 추가
+        final EditText input = new EditText(getContext());
+        builder.setView(input);
+
+        builder.setPositiveButton("생성", (dialog, which) -> {
+            String groupName = input.getText().toString();
+            if (!groupName.isEmpty()) {
+                createGroup(groupName);
+            } else {
+                Toast.makeText(getContext(), "그룹 이름을 입력하세요.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("취소", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void createGroup(String groupName) {
         UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
         if (userInfo.getUserEmail().isEmpty()) {
             Toast.makeText(getContext(), "로그인 정보가 없습니다.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        apiService.createGroup(userInfo).enqueue(new Callback<UserInfo>() {
+        // UserInfo에 그룹 이름을 추가하는 새로운 클래스 작성 (CreateGroupRequest)
+        CreateGroupRequest request = new CreateGroupRequest(userInfo, groupName);
+
+        apiService.createGroup(request).enqueue(new Callback<UserInfo>() {
             @Override
             public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
                 if (response.isSuccessful()) {

@@ -1,5 +1,6 @@
 package com.example.mogu.retrofit;
 
+import com.example.mogu.object.CreateGroupRequest;
 import com.example.mogu.object.UserInfo;
 
 import retrofit2.Call;
@@ -14,5 +15,5 @@ public interface ApiService {
     Call<UserInfo> login(@Body UserInfo user);
 
     @POST("/group-create")
-    Call<UserInfo> createGroup(@Body UserInfo user);
+    Call<UserInfo> createGroup(@Body CreateGroupRequest request);
 }

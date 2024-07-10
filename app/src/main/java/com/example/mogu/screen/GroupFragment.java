@@ -121,6 +121,9 @@ public class GroupFragment extends Fragment {
                     Log.d("UserInfo", "Phone Number: " + updatedUserInfo.getPhoneNumber());
                     Log.d("UserInfo", "Group Keys: " + updatedUserInfo.getGroupKeyList().toString());
 
+                    // 그룹 리스트 업데이트
+                    updateGroupList(updatedUserInfo);
+
                     Toast.makeText(getContext(), "그룹 생성 성공", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getContext(), "그룹 생성 실패: " + response.message(), Toast.LENGTH_SHORT).show();
@@ -132,5 +135,11 @@ public class GroupFragment extends Fragment {
                 Toast.makeText(getContext(), "그룹 생성 실패: 서버 오류", Toast.LENGTH_SHORT).show();
             }
         });
+
+    }
+
+    private void updateGroupList(UserInfo updatedUserInfo) {
+        // 새로운 그룹 리스트를 GroupAdapter에 전달하여 업데이트
+        groupAdapter.updateGroupList(updatedUserInfo.getGroupKeyList());
     }
 }

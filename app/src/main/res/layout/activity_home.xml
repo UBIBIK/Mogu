@@ -6,12 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".screen.HomeActivity">
+    tools:context=".screen.Home">
 
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="671dp"
+        android:layout_height="0dp"
         android:layout_weight="1" />
 
     <LinearLayout

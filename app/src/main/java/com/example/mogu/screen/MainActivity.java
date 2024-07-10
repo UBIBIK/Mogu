@@ -70,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
             // Intent intent = new Intent(MainActivity.this, FindIdPwActivity.class);
             // startActivity(intent);
         });
+
+        // 테스트버튼
+        findViewById(R.id.testbutton).setOnClickListener(v -> {
+            navigateToGroupActivity();
+        });
     }
 
     // 뷰 초기화 메서드

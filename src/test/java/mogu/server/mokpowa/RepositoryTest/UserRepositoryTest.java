@@ -1,7 +1,8 @@
 package mogu.server.mokpowa.RepositoryTest;
 
 
-import mogu.server.mokpowa.entity.UserInfo;
+import mogu.server.mokpowa.dto.UserInfo;
+import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ class UserRepositoryTest {
     @Test
     void insertUser_Test() throws Exception {
         // 새로운 사용자 데이터 정보가 저장되는지 확인
-        UserInfo user = new UserInfo(TEST_USER_EMAIL, TEST_USER_NAME, "01012341234", "123qwe");
+        User user = new User(TEST_USER_EMAIL, TEST_USER_NAME, "01012341234", "123qwe");
 
         userRepository.insertUser(user);
     }

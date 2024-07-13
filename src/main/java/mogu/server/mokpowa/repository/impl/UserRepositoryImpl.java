@@ -3,8 +3,8 @@ package mogu.server.mokpowa.repository.impl;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.User;
-import mogu.server.mokpowa.entity.UserInfo;
 import org.springframework.stereotype.Service;
 import mogu.server.mokpowa.repository.UserRepository;
 
@@ -43,13 +43,13 @@ public class UserRepositoryImpl implements UserRepository {
 
     // 사용자 정보 조회
     @Override
-    public UserInfo getUserDetail(String email) throws Exception {
+    public User getUserDetail(String email) throws Exception {
         DocumentReference documentReference =
                 firestore.collection(COLLECTION_NAME).document(email);
         ApiFuture<DocumentSnapshot> apiFuture = documentReference.get();
         DocumentSnapshot documentSnapshot = apiFuture.get();
         if(documentSnapshot.exists()){
-            return documentSnapshot.toObject(UserInfo.class);
+            return documentSnapshot.toObject(User.class);
         } else {
             throw new Exception("해당하는 유저가 존재하지 않습니다.");
         }

@@ -1,7 +1,7 @@
 package mogu.server.mokpowa.RepositoryTest;
 
 import mogu.server.mokpowa.entity.Group;
-import mogu.server.mokpowa.entity.UserInfo;
+import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.repository.GroupRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

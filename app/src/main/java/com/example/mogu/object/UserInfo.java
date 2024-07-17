@@ -7,7 +7,7 @@ public class UserInfo {
     private String password;
     private String userName;
     private String phoneNumber;
-    private ArrayList<String> groupKeyList = new ArrayList<>();
+    private ArrayList<GroupInfo> groupList = new ArrayList<>();
 
     public UserInfo(String userEmail, String userName, String password, String phoneNumber) {
         this.userEmail = userEmail;
@@ -48,7 +48,7 @@ public class UserInfo {
         this.phoneNumber = phoneNumber;
     }
 
-    public ArrayList<String> getGroupKeyList() { return groupKeyList; }
+    public ArrayList<GroupInfo> getGroupList() { return groupList; }
 
-    public void setGroupKeyList(ArrayList<String> groupKeyList) { this.groupKeyList = groupKeyList; }
+    public void setGroupKeyList(ArrayList<GroupInfo> groupList) { this.groupList = groupList; }
 }

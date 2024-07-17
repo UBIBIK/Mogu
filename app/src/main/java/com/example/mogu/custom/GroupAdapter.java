@@ -26,8 +26,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
 
     @Override
     public void onBindViewHolder(@NonNull GroupViewHolder holder, int position) {
-        String groupName = groupList.get(position);
-        holder.groupNameTextView.setText(groupName);
+        holder.bind(groupList.get(position));
     }
 
     @Override
@@ -41,12 +40,16 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         notifyDataSetChanged();
     }
 
-    static class GroupViewHolder extends RecyclerView.ViewHolder {
-        TextView groupNameTextView;
+    class GroupViewHolder extends RecyclerView.ViewHolder {
+        private TextView groupNameTextView;
 
         public GroupViewHolder(@NonNull View itemView) {
             super(itemView);
             groupNameTextView = itemView.findViewById(R.id.groupNameTextView);
+        }
+
+        public void bind(String groupName) {
+            groupNameTextView.setText(groupName);
         }
     }
 }

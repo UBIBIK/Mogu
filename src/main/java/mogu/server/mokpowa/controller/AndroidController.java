@@ -1,6 +1,7 @@
 package mogu.server.mokpowa.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import mogu.server.mokpowa.dto.CreateGroupRequest;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.*;
 import mogu.server.mokpowa.repository.GroupRepository;
@@ -47,12 +48,12 @@ public class AndroidController {
     @ResponseBody
     public ResponseEntity<UserInfo> loginUser(@RequestBody UserInfo loginUser) throws Exception {
         log.info("입력받은 이메일 = {}", loginUser.getUserEmail());
-        log.info("입력받은 비밀번호 = {}", loginUser.getUserEmail());
+        log.info("입력받은 비밀번호 = {}", loginUser.getPassword());
 
-        UserInfo finduser = userRepository.getUserDetail(loginUser.getUserEmail());
+        User finduser = userRepository.getUserDetail(loginUser.getUserEmail());
         if(finduser.getPassword().equals(loginUser.getPassword())) {
             log.info("사용자 로그인 성공 : {}", finduser.getUserName());
-            return ResponseEntity.ok(finduser); // 로그인 성공
+            return ResponseEntity.ok(new UserInfo(finduser.getUserEmail(), finduser.getPassword(), finduser.getUserName(), finduser.getPhoneNumber())); // 로그인 성공
         }
         else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 잘못된 사용자 정보를 입력했을 경우 로그인 실패
@@ -67,13 +68,16 @@ public class AndroidController {
         Group tempGroup;
 
         do {
-            tempGroup = new Group(randomNumber(), request.getGroupName(), user.getUserEmail());
+            tempGroup = new Group(request.getGroupName(), randomNumber(), user.getUserEmail(), user.getUserName());
         }while (groupRepository.groupExists(tempGroup.getGroupKey()));
         groupRepository.insertGroup(tempGroup, request.getUserInfo());
         user.getGroupKeyList().add(tempGroup.getGroupKey());
         userRepository.updateUser(user);
-        log.info("그룹 생성 : {}", user.getUserName());
-        log.info("그룹 키 : {}", tempGroup.getGroupKey());
+
+        request.getUserInfo().getGroupInfo().add(tempGroup);
+        log.info("그룹 생성자 : {}", user.getUserName());
+        log.info("그룹 멤버 이메일 : {}", request.getUserInfo().getGroupInfo().getFirst().getGroupMember().getFirst().getMemberEmail());
+        log.info("그룹 멤버 이름 : {}", request.getUserInfo().getGroupInfo().getFirst().getGroupMember().getFirst().getMemberName());
         return ResponseEntity.ok(request.getUserInfo());
     }
 

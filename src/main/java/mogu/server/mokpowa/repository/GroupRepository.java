@@ -13,8 +13,6 @@ public interface GroupRepository {
     
     boolean groupExists(String groupKey); // 그룹 존재 여부 확인
 
-    List<Group> getJoinGroup(UserInfo user)  throws ExecutionException, InterruptedException; // 가입된 그룹 정보 확인
-    
     Group addGroupMember(String groupKey, UserInfo user) throws Exception; // 그룹 멤버 추가
 
     String updateGroup(Group group) throws Exception; // 그룹 정보 수정

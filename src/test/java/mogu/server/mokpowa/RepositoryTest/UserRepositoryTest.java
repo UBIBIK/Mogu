@@ -19,14 +19,14 @@ class UserRepositoryTest {
     @Test
     void insertUser_Test() throws Exception {
         // 새로운 사용자 데이터 정보가 저장되는지 확인
-        User user = new User(TEST_USER_EMAIL, TEST_USER_NAME, "01012341234", "123qwe");
+        UserInfo user = new UserInfo(TEST_USER_EMAIL, "123qwe", TEST_USER_NAME, "01012341234");
 
         userRepository.insertUser(user);
     }
 
     @Test
     void getUserDatail_Test() throws Exception {
-        UserInfo finduser = userRepository.getUserDetail(TEST_USER_EMAIL);
+        User finduser = userRepository.getUserDetail(TEST_USER_EMAIL);
         System.out.println(finduser.getUserEmail() + ", " + finduser.getUserName() + ", " + finduser.getPassword());
     }
 }

@@ -14,18 +14,19 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class User extends UserInfo {
+public class User {
     @NonNull
     private String userEmail;
+    @NonNull
     private String password;
     private String userName;
     private String phoneNumber;
     private List<String> groupKeyList = new ArrayList<>();
 
-    public User(@NotNull String userEmail, String phoneNumber, String userName, String password) {
+    public User(@NotNull String userEmail, @NonNull String password, String userName, String phoneNumber) {
         this.userEmail = userEmail;
-        this.phoneNumber = phoneNumber;
-        this.userName = userName;
         this.password = password;
+        this.userName = userName;
+        this.phoneNumber = phoneNumber;
     }
 }

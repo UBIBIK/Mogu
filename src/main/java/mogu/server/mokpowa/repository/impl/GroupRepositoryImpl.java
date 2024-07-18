@@ -3,6 +3,7 @@ package mogu.server.mokpowa.repository.impl;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import mogu.server.mokpowa.dto.GroupMember;
 import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.repository.GroupRepository;
@@ -11,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @Service
 public class GroupRepositoryImpl implements GroupRepository {
@@ -48,12 +46,8 @@ public class GroupRepositoryImpl implements GroupRepository {
             throw new Exception("해당 그룹 이름이 이미 존재합니다.");
         }
 
-        // 새로운 멤버 정보를 생성
-        Map<String, Object> newMemberInfo = new HashMap<>();
-        newMemberInfo.put("groupMemberEmail", user.getUserEmail());
-
         // 그룹 멤버 리스트에 새로운 멤버 정보를 추가
-        group.getGroupMember().add(newMemberInfo);
+        group.getGroupMember().add(new GroupMember(user.getUserEmail(), user.getUserName(), null, null));
 
         // 그룹 정보 저장
         ApiFuture<WriteResult> resultApiFuture = firestore.collection(COLLECTION_NAME).document(group.getGroupKey()).set(group);
@@ -87,13 +81,6 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public List<Group> getJoinGroup(UserInfo user) throws ExecutionException, InterruptedException {
-        List<Group> list = new ArrayList<>();
-
-        return list;
-    }
-
-    @Override
     public String updateGroup(Group group) throws Exception {
         ApiFuture<WriteResult> future =
                 firestore.collection(COLLECTION_NAME).document(group.getGroupName()).set(group);
@@ -121,21 +108,17 @@ public class GroupRepositoryImpl implements GroupRepository {
             Group group = document.toObject(Group.class);
 
             // 그룹 멤버 리스트를 가져옴
-            List<Map<String, Object>> groupMembers = group.getGroupMember();
+            ArrayList<GroupMember> groupMembers = group.getGroupMember();
 
             // 그룹 멤버 리스트를 순회하며 중복 멤버를 검사
-            for (Map<String, Object> member : groupMembers) {
-                if (member.get("groupMemberName").equals(user.getUserEmail())) {
+            for (GroupMember member : groupMembers) {
+                if (member.getMemberEmail().equals(user.getUserEmail())) {
                     throw new Exception("해당 그룹 멤버가 이미 존재합니다.");
                 }
             }
 
-            // 새로운 멤버 정보를 생성
-            Map<String, Object> newMemberInfo = new HashMap<>();
-            newMemberInfo.put("groupMemberEmail", user.getUserEmail());
-
             // 그룹 멤버 리스트에 새로운 멤버 정보를 추가
-            group.getGroupMember().add(newMemberInfo);
+            group.getGroupMember().add(new GroupMember(user.getUserEmail(), user.getUserName(), null, null));
 
             // 그룹 정보를 업데이트
             updateGroup(group);

@@ -22,10 +22,10 @@ public class GroupRepositoryTest {
     // 그룹 정보 추가 테스트
     @Test
     public void insertGroupTest() throws Exception {
-        Group group = new Group(TEST_GROUP_NAME, TEST_GROUP_KEY);
         UserInfo master = new UserInfo();
         master.setUserEmail(TEST_GROUP_MASTER_EMAIL);
         master.setUserName(TEST_GROUP_MASTER_NAME);
+        Group group = new Group(TEST_GROUP_NAME, TEST_GROUP_KEY, master.getUserEmail(), master.getUserName());
         groupRepository.insertGroup(group, master);
     }
 }

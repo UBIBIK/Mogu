@@ -1,32 +1,31 @@
 package mogu.server.mokpowa.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import mogu.server.mokpowa.dto.GroupInfo;
+import mogu.server.mokpowa.dto.GroupMember;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class Group {
+@AllArgsConstructor
+public class Group extends GroupInfo {
+    private String GroupName;
     @NonNull
-    private String groupKey;
-    private String groupName;
-    private String groupMaterEmail;
-    private ArrayList<Map<String, Object>> groupMember = new ArrayList<>();
+    private String GroupKey;
+    @NonNull
+    private String GM_Email;
+    private String GM_Name;
+    private ArrayList<GroupMember> GroupMember = new ArrayList<>();
 
-    public Group(@NotNull String groupKey, String groupName, String groupMaterEmail) {
-        this.groupKey = groupKey;
-        this.groupName = groupName;
-        this.groupMaterEmail = groupMaterEmail;
-    }
-
-    public Group(@NotNull String groupKey, String groupName) {
-        this.groupKey = groupKey;
-        this.groupName = groupName;
+    public Group(String groupName, @NonNull String groupKey, @NonNull String GM_Email, String GM_Name) {
+        GroupName = groupName;
+        GroupKey = groupKey;
+        this.GM_Email = GM_Email;
+        this.GM_Name = GM_Name;
     }
 }

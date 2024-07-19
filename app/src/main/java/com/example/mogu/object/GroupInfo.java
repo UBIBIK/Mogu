@@ -3,49 +3,59 @@ package com.example.mogu.object;
 import java.util.ArrayList;
 
 public class GroupInfo {
-    private String GroupName;
-    private String GroupKey;
-    private String GM_Email;
-    private String GM_Name;
-    private ArrayList<GroupMember> GroupMember;
+    private String groupName;
+    private String groupKey;
+    private String gmEmail;
+    private String gmName;
+    private ArrayList<GroupMember> groupMember = new ArrayList<>();
+
+    public GroupInfo() {}
+
+    public GroupInfo(String groupName, String groupKey, String gmEmail, String gmName, ArrayList<GroupMember> groupMember) {
+        this.groupName = groupName;
+        this.groupKey = groupKey;
+        this.gmEmail = gmEmail;
+        this.gmName = gmName;
+        this.groupMember = groupMember;
+    }
 
     public String getGroupName() {
-        return GroupName;
+        return groupName;
     }
 
     public void setGroupName(String groupName) {
-        GroupName = groupName;
+        this.groupName = groupName;
     }
 
     public String getGroupKey() {
-        return GroupKey;
+        return groupKey;
     }
 
     public void setGroupKey(String groupKey) {
-        GroupKey = groupKey;
+        this.groupKey = groupKey;
     }
 
-    public String getGM_Email() {
-        return GM_Email;
+    public String getGmEmail() {
+        return gmEmail;
     }
 
-    public void setGM_Email(String GM_Email) {
-        this.GM_Email = GM_Email;
+    public void setGmEmail(String gmEmail) {
+        this.gmEmail = gmEmail;
     }
 
-    public String getGM_Name() {
-        return GM_Name;
+    public String getGmName() {
+        return gmName;
     }
 
-    public void setGM_Name(String GM_Name) {
-        this.GM_Name = GM_Name;
+    public void setGmName(String gmName) {
+        this.gmName = gmName;
     }
 
-    public ArrayList<com.example.mogu.object.GroupMember> getGroupMember() {
-        return GroupMember;
+    public ArrayList<GroupMember> getGroupMember() {
+        return groupMember;
     }
 
-    public void setGroupMember(ArrayList<com.example.mogu.object.GroupMember> groupMember) {
-        GroupMember = groupMember;
+    public void setGroupMember(ArrayList<GroupMember> groupMember) {
+        this.groupMember = groupMember;
     }
 }

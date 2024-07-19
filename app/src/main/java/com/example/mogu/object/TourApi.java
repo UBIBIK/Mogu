@@ -11,7 +11,6 @@ public class TourApi {
         this.title= title;
         this.addr1 = addr1;
         this.addr2 = addr2;
-
     }
 
     public String getFirstimage() {
@@ -21,6 +20,7 @@ public class TourApi {
     public String getTitle(){
         return title;
     }
+
     public String getAddr1() {
         return addr1;
     }

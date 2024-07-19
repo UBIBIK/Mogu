@@ -4,6 +4,8 @@ public class CreateGroupRequest {
     private UserInfo userInfo;
     private String groupName;
 
+    public CreateGroupRequest() {}
+
     public CreateGroupRequest(UserInfo userInfo, String groupName) {
         this.userInfo = userInfo;
         this.groupName = groupName;
@@ -21,7 +23,5 @@ public class CreateGroupRequest {
         return groupName;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
+    public void setGroupName(String groupName) { this.groupName = groupName; }
 }

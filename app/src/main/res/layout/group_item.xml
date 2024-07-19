@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/group_item.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -6,9 +6,9 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/groupNameTextView"
+        android:id="@+id/group_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:textColor="#000000"/>
+        android:textColor="@android:color/black" />
 </LinearLayout>

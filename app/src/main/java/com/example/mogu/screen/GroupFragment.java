@@ -19,10 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mogu.R;
 import com.example.mogu.custom.GroupAdapter;
 import com.example.mogu.object.CreateGroupRequest;
+import com.example.mogu.object.GroupInfo;
 import com.example.mogu.object.UserInfo;
 import com.example.mogu.retrofit.ApiService;
 import com.example.mogu.retrofit.RetrofitClient;
 import com.example.mogu.share.SharedPreferencesHelper;
+
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -58,6 +61,33 @@ public class GroupFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        loadSavedUserInfo();
+    }
+
+    private void loadSavedUserInfo() {
+        UserInfo savedUserInfo = sharedPreferencesHelper.getUserInfo();
+        if (savedUserInfo != null) {
+            ArrayList<GroupInfo> groupList = savedUserInfo.getGroupList();
+            if (groupList != null && !groupList.isEmpty()) {
+
+                Log.d("UserInfo", "Group List size: " + groupList.size());
+                for (GroupInfo group : groupList) {
+                    Log.d("UserInfo", "Group Name: " + group.getGroupName());
+                    Log.d("UserInfo", "Group Key: " + group.getGroupKey());
+                }
+
+                updateGroupList(savedUserInfo);
+            }
+
+            else {
+                Log.d("UserInfo", "Group List is null");
+            }
+        }
     }
 
     private void showPopup() {
@@ -119,7 +149,17 @@ public class GroupFragment extends Fragment {
                     Log.d("UserInfo", "Email: " + updatedUserInfo.getUserEmail());
                     Log.d("UserInfo", "Name: " + updatedUserInfo.getUserName());
                     Log.d("UserInfo", "Phone Number: " + updatedUserInfo.getPhoneNumber());
-                    Log.d("UserInfo", "Group Keys: " + updatedUserInfo.getGroupList().toString());
+
+                    ArrayList<GroupInfo> groupList = updatedUserInfo.getGroupList();
+                    if (groupList != null) {
+                        Log.d("UserInfo", "Group List size: " + groupList.size());
+                        for (GroupInfo group : groupList) {
+                            Log.d("UserInfo", "Group Name: " + group.getGroupName());
+                            Log.d("UserInfo", "Group Key: " + group.getGroupKey());
+                        }
+                    } else {
+                        Log.d("UserInfo", "Group List is null");
+                    }
 
                     // 그룹 리스트 업데이트
                     updateGroupList(updatedUserInfo);
@@ -135,11 +175,10 @@ public class GroupFragment extends Fragment {
                 Toast.makeText(getContext(), "그룹 생성 실패: 서버 오류", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     private void updateGroupList(UserInfo updatedUserInfo) {
         // 새로운 그룹 리스트를 GroupAdapter에 전달하여 업데이트
-        //groupAdapter.updateGroupList(updatedUserInfo.getGroupList());
+        groupAdapter.updateGroupList(updatedUserInfo.getGroupList());
     }
 }

@@ -9,11 +9,14 @@ public class UserInfo {
     private String phoneNumber;
     private ArrayList<GroupInfo> groupList = new ArrayList<>();
 
+    public UserInfo() {}
+
     public UserInfo(String userEmail, String userName, String password, String phoneNumber) {
         this.userEmail = userEmail;
         this.userName = userName;
         this.password = password;
         this.phoneNumber = phoneNumber;
+        this.groupList = new ArrayList<>(); // 빈 리스트로 초기화
     }
 
     public String getUserEmail() {
@@ -48,7 +51,11 @@ public class UserInfo {
         this.phoneNumber = phoneNumber;
     }
 
-    public ArrayList<GroupInfo> getGroupList() { return groupList; }
+    public ArrayList<GroupInfo> getGroupList() {
+        return groupList;
+    }
 
-    public void setGroupKeyList(ArrayList<GroupInfo> groupList) { this.groupList = groupList; }
+    public void setGroupList(ArrayList<GroupInfo> groupList) {
+        this.groupList = groupList;
+    }
 }

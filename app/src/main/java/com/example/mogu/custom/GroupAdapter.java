@@ -5,28 +5,34 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
+import com.example.mogu.object.GroupInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHolder> {
+public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
 
-    private List<String> groupList = new ArrayList<>();
+    private List<GroupInfo> groupList = new ArrayList<>();
 
-    @NonNull
-    @Override
-    public GroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_group, parent, false);
-        return new GroupViewHolder(view);
+    public void updateGroupList(List<GroupInfo> newGroupList) {
+        groupList.clear();
+        groupList.addAll(newGroupList);
+        notifyDataSetChanged();
     }
 
     @Override
-    public void onBindViewHolder(@NonNull GroupViewHolder holder, int position) {
-        holder.bind(groupList.get(position));
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.group_item, parent, false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        GroupInfo group = groupList.get(position);
+        holder.groupName.setText(group.getGroupName());
     }
 
     @Override
@@ -34,22 +40,12 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         return groupList.size();
     }
 
-    public void updateGroupList(List<String> newGroupList) {
-        groupList.clear();
-        groupList.addAll(newGroupList);
-        notifyDataSetChanged();
-    }
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView groupName;
 
-    class GroupViewHolder extends RecyclerView.ViewHolder {
-        private TextView groupNameTextView;
-
-        public GroupViewHolder(@NonNull View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
-            groupNameTextView = itemView.findViewById(R.id.groupNameTextView);
-        }
-
-        public void bind(String groupName) {
-            groupNameTextView.setText(groupName);
+            groupName = itemView.findViewById(R.id.group_name);
         }
     }
 }

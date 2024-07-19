@@ -11,7 +11,7 @@ public class UserInfo {
     private String password;
     private String userName;
     private String phoneNumber;
-    private ArrayList<GroupInfo> groupInfo = new ArrayList<>();
+    private ArrayList<GroupInfo> groupList = new ArrayList<>();
 
     public UserInfo() {}
 
@@ -20,6 +20,7 @@ public class UserInfo {
         this.userName = userName;
         this.password = password;
         this.phoneNumber = phoneNumber;
+        this.groupList = new ArrayList<>();
     }
 
     public UserInfo(String userEmail, String password, String userName, String phoneNumber, ArrayList<GroupInfo> groupInfo) {
@@ -27,6 +28,6 @@ public class UserInfo {
         this.password = password;
         this.userName = userName;
         this.phoneNumber = phoneNumber;
-        this.groupInfo = groupInfo;
+        this.groupList = groupInfo;
     }
 }

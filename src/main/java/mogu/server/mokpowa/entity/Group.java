@@ -14,18 +14,18 @@ import java.util.ArrayList;
 @Setter
 @AllArgsConstructor
 public class Group extends GroupInfo {
-    private String GroupName;
+    private String groupName;
     @NonNull
-    private String GroupKey;
+    private String groupKey;
     @NonNull
-    private String GM_Email;
-    private String GM_Name;
+    private String gmEmail;
+    private String gmName;
     private ArrayList<GroupMember> GroupMember = new ArrayList<>();
 
     public Group(String groupName, @NonNull String groupKey, @NonNull String GM_Email, String GM_Name) {
-        GroupName = groupName;
-        GroupKey = groupKey;
-        this.GM_Email = GM_Email;
-        this.GM_Name = GM_Name;
+        this.groupName = groupName;
+        this.groupKey = groupKey;
+        this.gmEmail = GM_Email;
+        this.gmName = GM_Name;
     }
 }

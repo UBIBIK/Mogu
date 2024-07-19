@@ -21,7 +21,7 @@ public class User {
     private String password;
     private String userName;
     private String phoneNumber;
-    private List<String> groupKeyList = new ArrayList<>();
+    private List<String> groupkeyList = new ArrayList<>();
 
     public User(@NotNull String userEmail, @NonNull String password, String userName, String phoneNumber) {
         this.userEmail = userEmail;

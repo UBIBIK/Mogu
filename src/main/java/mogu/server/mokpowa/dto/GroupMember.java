@@ -6,17 +6,17 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GroupMember {
-    private String MemberEmail;
-    private String MemberName;
-    private Double MemberLongitude;
-    private Double MemberLatitude;
+    private String memberEmail;
+    private String memberName;
+    private Double memberLongitude;
+    private Double memberLatitude;
 
     public GroupMember() {}
 
     public GroupMember(String memberEmail, String memberName, Double memberLongitude, Double memberLatitude) {
-        MemberEmail = memberEmail;
-        MemberName = memberName;
-        MemberLongitude = memberLongitude;
-        MemberLatitude = memberLatitude;
+        this.memberEmail = memberEmail;
+        this.memberName = memberName;
+        this.memberLongitude = memberLongitude;
+        this.memberLatitude = memberLatitude;
     }
 }

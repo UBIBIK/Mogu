@@ -53,7 +53,7 @@ public class AndroidController {
         User finduser = userRepository.getUserDetail(loginUser.getUserEmail());
         if(finduser.getPassword().equals(loginUser.getPassword())) {
             log.info("사용자 로그인 성공 : {}", finduser.getUserName());
-            return ResponseEntity.ok(new UserInfo(finduser.getUserEmail(), finduser.getPassword(), finduser.getUserName(), finduser.getPhoneNumber())); // 로그인 성공
+            return ResponseEntity.ok(new UserInfo(finduser.getUserEmail(), finduser.getUserName(), finduser.getPassword(), finduser.getPhoneNumber())); // 로그인 성공
         }
         else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 잘못된 사용자 정보를 입력했을 경우 로그인 실패
@@ -71,13 +71,13 @@ public class AndroidController {
             tempGroup = new Group(request.getGroupName(), randomNumber(), user.getUserEmail(), user.getUserName());
         }while (groupRepository.groupExists(tempGroup.getGroupKey()));
         groupRepository.insertGroup(tempGroup, request.getUserInfo());
-        user.getGroupKeyList().add(tempGroup.getGroupKey());
+        user.getGroupkeyList().add(tempGroup.getGroupKey());
         userRepository.updateUser(user);
 
-        request.getUserInfo().getGroupInfo().add(tempGroup);
+        request.getUserInfo().getGroupList().add(tempGroup);
         log.info("그룹 생성자 : {}", user.getUserName());
-        log.info("그룹 멤버 이메일 : {}", request.getUserInfo().getGroupInfo().getFirst().getGroupMember().getFirst().getMemberEmail());
-        log.info("그룹 멤버 이름 : {}", request.getUserInfo().getGroupInfo().getFirst().getGroupMember().getFirst().getMemberName());
+        log.info("그룹 멤버 이메일 : {}", request.getUserInfo().getGroupList().getFirst().getGroupMember().getFirst().getMemberEmail());
+        log.info("그룹 멤버 이름 : {}", request.getUserInfo().getGroupList().getFirst().getGroupMember().getFirst().getMemberName());
         return ResponseEntity.ok(request.getUserInfo());
     }
 

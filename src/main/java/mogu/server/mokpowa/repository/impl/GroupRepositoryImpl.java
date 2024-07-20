@@ -3,9 +3,11 @@ package mogu.server.mokpowa.repository.impl;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import mogu.server.mokpowa.dto.GroupInfo;
 import mogu.server.mokpowa.dto.GroupMember;
 import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.dto.UserInfo;
+import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.repository.GroupRepository;
 import mogu.server.mokpowa.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +80,20 @@ public class GroupRepositoryImpl implements GroupRepository {
         } catch (Exception e) {
             return false; // 그룹이 존재하지 않는 경우
         }
+    }
+
+    @Override
+    public ArrayList<GroupInfo> getJoinGroup(User user) throws Exception {
+        ArrayList<GroupInfo> joinGroup = new ArrayList<>();
+
+        for(String groupKey : user.getGroupKeyList()) {
+            Group group = getGroupDatail(groupKey);
+            if(group != null) {
+                joinGroup.add(group);
+            }
+        }
+
+        return joinGroup;
     }
 
     @Override

@@ -20,7 +20,7 @@ public class UserInfo {
         this.userName = userName;
         this.password = password;
         this.phoneNumber = phoneNumber;
-        this.groupList = new ArrayList<>();
+        this.groupList = new ArrayList<>(); // 빈 리스트로 초기화
     }
 
     public UserInfo(String userEmail, String password, String userName, String phoneNumber, ArrayList<GroupInfo> groupInfo) {

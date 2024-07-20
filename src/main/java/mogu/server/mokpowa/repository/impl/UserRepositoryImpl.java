@@ -23,7 +23,7 @@ public class UserRepositoryImpl implements UserRepository {
         if (user == null) {
             throw new IllegalArgumentException("User 객체가 null입니다.");
         }
-        // TODO : DTO 형식에 맞게 수정해야함
+
         User newuser = new User(user.getUserEmail(), user.getPassword(), user.getUserName(), user.getPhoneNumber());
 
         // 파이어베이스에 동일한 userEmail을 가진 사용자가 있는지 확인

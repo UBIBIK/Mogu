@@ -6,7 +6,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import mogu.server.mokpowa.dto.GroupInfo;
 import mogu.server.mokpowa.dto.GroupMember;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
@@ -21,6 +20,8 @@ public class Group extends GroupInfo {
     private String gmEmail;
     private String gmName;
     private ArrayList<GroupMember> GroupMember = new ArrayList<>();
+
+    public Group() {}
 
     public Group(String groupName, @NonNull String groupKey, @NonNull String GM_Email, String GM_Name) {
         this.groupName = groupName;

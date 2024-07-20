@@ -2,6 +2,7 @@ package mogu.server.mokpowa.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import mogu.server.mokpowa.dto.CreateGroupRequest;
+import mogu.server.mokpowa.dto.GroupInfo;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.*;
 import mogu.server.mokpowa.repository.GroupRepository;
@@ -52,8 +53,13 @@ public class AndroidController {
 
         User finduser = userRepository.getUserDetail(loginUser.getUserEmail());
         if(finduser.getPassword().equals(loginUser.getPassword())) {
-            log.info("사용자 로그인 성공 : {}", finduser.getUserName());
-            return ResponseEntity.ok(new UserInfo(finduser.getUserEmail(), finduser.getUserName(), finduser.getPassword(), finduser.getPhoneNumber())); // 로그인 성공
+            loginUser.setGroupList(groupRepository.getJoinGroup(finduser));
+            log.info("사용자 로그인 성공 : {}", loginUser.getUserName());
+            for(GroupInfo groupInfo : loginUser.getGroupList()) {
+                log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
+            }
+
+            return ResponseEntity.ok(loginUser); // 로그인 성공
         }
         else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 잘못된 사용자 정보를 입력했을 경우 로그인 실패
@@ -65,28 +71,27 @@ public class AndroidController {
     @ResponseBody
     public ResponseEntity<UserInfo> groupCreate(@RequestBody CreateGroupRequest request) throws Exception {
         User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 사용자 정보가 올바르지 않습니다.
+        }
         Group tempGroup;
 
         do {
             tempGroup = new Group(request.getGroupName(), randomNumber(), user.getUserEmail(), user.getUserName());
         }while (groupRepository.groupExists(tempGroup.getGroupKey()));
         groupRepository.insertGroup(tempGroup, request.getUserInfo());
-        user.getGroupkeyList().add(tempGroup.getGroupKey());
+        user.getGroupKeyList().add(tempGroup.getGroupKey());
         userRepository.updateUser(user);
 
         request.getUserInfo().getGroupList().add(tempGroup);
         log.info("그룹 생성자 : {}", user.getUserName());
         log.info("그룹 멤버 이메일 : {}", request.getUserInfo().getGroupList().getFirst().getGroupMember().getFirst().getMemberEmail());
         log.info("그룹 멤버 이름 : {}", request.getUserInfo().getGroupList().getFirst().getGroupMember().getFirst().getMemberName());
+        for(GroupInfo groupInfo : request.getUserInfo().getGroupList()) {
+            log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
+        }
         return ResponseEntity.ok(request.getUserInfo());
     }
-
-    //TODO : 그룹 존재 여부 확인 구현해야함
-    /*@PostMapping("/group-exist")
-    @ResponseBody
-    public ResponseEntity<Group> getUserGroups(@RequestBody UserInfo user) throws ExecutionException, InterruptedException {
-
-    }*/
 
     // 난수 생성 함수
     public String randomNumber() {

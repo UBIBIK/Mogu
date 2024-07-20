@@ -53,8 +53,11 @@ public class AndroidController {
 
         User finduser = userRepository.getUserDetail(loginUser.getUserEmail());
         if(finduser.getPassword().equals(loginUser.getPassword())) {
+            loginUser.setUserName(finduser.getUserName());
+            loginUser.setPhoneNumber(finduser.getPhoneNumber());
             loginUser.setGroupList(groupRepository.getJoinGroup(finduser));
-            log.info("사용자 로그인 성공 : {}", loginUser.getUserName());
+            log.info("사용자 로그인 성공 이름 : {}", loginUser.getUserName());
+            log.info("전화번호 : {}", loginUser.getPhoneNumber());
             for(GroupInfo groupInfo : loginUser.getGroupList()) {
                 log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
             }

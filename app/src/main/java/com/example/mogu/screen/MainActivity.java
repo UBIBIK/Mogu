@@ -9,12 +9,15 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mogu.R;
+import com.example.mogu.object.GroupInfo;
 import com.example.mogu.share.SharedPreferencesHelper;
 import com.example.mogu.object.UserInfo;
 import com.example.mogu.websocket.WebSocketService;
 import com.example.mogu.retrofit.ApiService;
 import com.example.mogu.retrofit.RetrofitClient;
 import com.kakao.sdk.common.util.Utility;
+
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -92,6 +95,19 @@ public class MainActivity extends AppCompatActivity {
                     UserInfo loggedInUser = response.body();
                     if (loggedInUser != null) {
                         Toast.makeText(MainActivity.this, "로그인 성공: " + loggedInUser.getUserName(), Toast.LENGTH_SHORT).show();
+                        if (loggedInUser != null) {
+                            ArrayList<GroupInfo> groupList = loggedInUser.getGroupList();
+                            if (groupList != null && !groupList.isEmpty()) {
+                                Log.d("UserInfo", "Group List size: " + groupList.size());
+                                for (GroupInfo group : groupList) {
+                                    Log.d("UserInfo", "Group Name: " + group.getGroupName());
+                                    Log.d("UserInfo", "Group Key: " + group.getGroupKey());
+                                }
+                            }
+                            else {
+                                Log.d("UserInfo", "Group List is null");
+                            }
+                        }
                         sharedPreferencesHelper.saveUserInfo(loggedInUser);
                         startWebSocketService();
                         navigateToGroupActivity();
@@ -120,6 +136,16 @@ public class MainActivity extends AppCompatActivity {
                     UserInfo loggedInUser = response.body();
                     if (loggedInUser != null) {
                         Toast.makeText(MainActivity.this, "로그인 성공: " + loggedInUser.getUserName(), Toast.LENGTH_SHORT).show();
+                        ArrayList<GroupInfo> groupList = loggedInUser.getGroupList();
+                        if (groupList != null && !groupList.isEmpty()) {
+                            Log.d("UserInfo", "Group List size: " + groupList.size());
+                            for (GroupInfo group : groupList) {
+                                Log.d("UserInfo", "Group Name: " + group.getGroupName());
+                                Log.d("UserInfo", "Group Key: " + group.getGroupKey());
+                            }
+                        } else {
+                            Log.d("UserInfo", "Group List is null");
+                        }
                         sharedPreferencesHelper.saveUserInfo(loggedInUser);
                         startWebSocketService();
                         navigateToGroupActivity();

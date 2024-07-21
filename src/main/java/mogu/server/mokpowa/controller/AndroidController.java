@@ -1,9 +1,7 @@
 package mogu.server.mokpowa.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import mogu.server.mokpowa.dto.CreateGroupRequest;
-import mogu.server.mokpowa.dto.GroupInfo;
-import mogu.server.mokpowa.dto.UserInfo;
+import mogu.server.mokpowa.dto.*;
 import mogu.server.mokpowa.entity.*;
 import mogu.server.mokpowa.repository.GroupRepository;
 import mogu.server.mokpowa.repository.UserRepository;
@@ -14,7 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import retrofit2.Call;
+import retrofit2.http.Body;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 @Slf4j
@@ -77,26 +78,66 @@ public class AndroidController {
     @PostMapping("/group-create")
     @ResponseBody
     public ResponseEntity<UserInfo> groupCreate(@RequestBody CreateGroupRequest request) throws Exception {
-        User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
-        if(user == null) {
+        if(request.getUserInfo() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 사용자 정보가 올바르지 않습니다.
         }
         Group tempGroup;
 
         do {
-            tempGroup = new Group(request.getGroupName(), randomNumber(), user.getUserEmail(), user.getUserName());
+            tempGroup = new Group(request.getGroupName(), randomNumber(), request.getUserInfo().getUserEmail(), request.getUserInfo().getUserName());
         }while (groupRepository.groupExists(tempGroup.getGroupKey()));
-        groupRepository.insertGroup(tempGroup, request.getUserInfo());
-        user.getGroupKeyList().add(tempGroup.getGroupKey());
-        userRepository.updateUser(user);
 
-        request.getUserInfo().getGroupList().add(tempGroup);
-        log.info("그룹 생성자 : {}", user.getUserName());
+        request.setUserInfo(groupRepository.insertGroup(tempGroup, request.getUserInfo()));
+        log.info("그룹 생성자 : {}", request.getUserInfo().getUserName());
         log.info("그룹 멤버 이메일 : {}", request.getUserInfo().getGroupList().getFirst().getGroupMember().getFirst().getMemberEmail());
         log.info("그룹 멤버 이름 : {}", request.getUserInfo().getGroupList().getFirst().getGroupMember().getFirst().getMemberName());
         for(GroupInfo groupInfo : request.getUserInfo().getGroupList()) {
             log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
         }
+        return ResponseEntity.ok(request.getUserInfo());
+    }
+
+    // 그룹 참가
+    @PostMapping("/api/joinGroup")
+    public ResponseEntity<UserInfo> joinGroup(@RequestBody JoinGroupRequest request) throws Exception {
+        User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 사용자 정보가 올바르지 않습니다.
+        }
+
+        // 가입된 그룹을 userInfo에 업데이트하여 반환
+        GroupInfo JoinGroup = groupRepository.joinGroup(request.getGroupKey(), request.getUserInfo());
+        request.getUserInfo().getGroupList().add(JoinGroup);
+        user.getGroupKeyList().add(request.getGroupKey());
+        userRepository.updateUser(user);
+
+        return ResponseEntity.ok(request.getUserInfo());
+    }
+
+    // 그룹 삭제
+    @PostMapping("/api/DeleteGroup")
+    public ResponseEntity<UserInfo> deleteGroup(@RequestBody DeleteGroupRequest request) throws Exception {
+        request.setUserInfo(groupRepository.deleteGroup(request.getGroupName(), request.getUserInfo()));
+        for(GroupInfo groupInfo : request.getUserInfo().getGroupList()) {
+            log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
+        }
+
+        return ResponseEntity.ok(request.getUserInfo());
+    }
+
+    // 그룹 멤버 삭제
+    @PostMapping
+    public ResponseEntity<UserInfo> deleteGroupMember(@RequestBody DeleteGroupMemberRequest request) throws Exception {
+        request.setUserInfo(groupRepository.deleteGroupMember(request.getGroupName(), request.getDeleteMemberEmail(), request.getUserInfo()));
+        for(GroupInfo groupInfo : request.getUserInfo().getGroupList()) {
+            if(groupInfo.getGroupName().equals(request.getGroupName())) {
+                ArrayList<GroupMember> groupMembers = groupInfo.getGroupMember();
+                for (GroupMember groupMember : groupMembers) {
+                    log.info("그룹 멤버 : {}", groupMember.getMemberEmail());
+                }
+            }
+        }
+
         return ResponseEntity.ok(request.getUserInfo());
     }
 

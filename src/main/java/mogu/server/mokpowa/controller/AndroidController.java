@@ -44,7 +44,6 @@ public class AndroidController {
         return userRepository.insertUser(user);
     }
 
-    // 로그인
     @PostMapping("/login")
     @ResponseBody
     public ResponseEntity<UserInfo> loginUser(@RequestBody UserInfo loginUser) throws Exception {
@@ -58,8 +57,13 @@ public class AndroidController {
             loginUser.setGroupList(groupRepository.getJoinGroup(finduser));
             log.info("사용자 로그인 성공 이름 : {}", loginUser.getUserName());
             log.info("전화번호 : {}", loginUser.getPhoneNumber());
-            for(GroupInfo groupInfo : loginUser.getGroupList()) {
-                log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
+            if (loginUser.getGroupList() != null) {
+                log.info("Group List size: " + loginUser.getGroupList().size());
+                for (GroupInfo groupInfo : loginUser.getGroupList()) {
+                    log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
+                }
+            } else {
+                log.info("Group List is null");
             }
 
             return ResponseEntity.ok(loginUser); // 로그인 성공

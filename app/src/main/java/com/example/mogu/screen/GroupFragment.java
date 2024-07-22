@@ -19,7 +19,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mogu.R;
 import com.example.mogu.custom.GroupAdapter;
 import com.example.mogu.object.CreateGroupRequest;
+import com.example.mogu.object.DeleteGroupMemberRequest;
+import com.example.mogu.object.DeleteGroupRequest;
 import com.example.mogu.object.GroupInfo;
+import com.example.mogu.object.GroupMember;
 import com.example.mogu.object.JoinGroupRequest;
 import com.example.mogu.object.UserInfo;
 import com.example.mogu.retrofit.ApiService;
@@ -48,7 +51,7 @@ public class GroupFragment extends Fragment {
         // RecyclerView 초기화
         RecyclerView groupRecyclerView = view.findViewById(R.id.groupRecyclerView);
         groupRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        groupAdapter = new GroupAdapter();
+        groupAdapter = new GroupAdapter(this); // GroupFragment를 참조로 전달
         groupRecyclerView.setAdapter(groupAdapter);
 
         // ApiService 및 SharedPreferencesHelper 초기화
@@ -259,5 +262,110 @@ public class GroupFragment extends Fragment {
     // 그룹 리스트를 업데이트하는 메서드
     private void updateGroupList(UserInfo updatedUserInfo) {
         groupAdapter.updateGroupList(updatedUserInfo.getGroupList());
+    }
+
+    // 그룹 삭제 메서드 추가
+    public void deleteGroup(GroupInfo group) {
+        UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+        if (userInfo.getUserEmail().isEmpty()) {
+            Toast.makeText(getContext(), "로그인 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DeleteGroupRequest request = new DeleteGroupRequest(userInfo, group.getGroupName());
+
+        apiService.deleteGroup(request).enqueue(new Callback<UserInfo>() {
+            @Override
+            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserInfo updatedUserInfo = response.body();
+                    sharedPreferencesHelper.saveUserInfo(updatedUserInfo);
+
+                    Log.d(TAG, "Email: " + updatedUserInfo.getUserEmail());
+                    Log.d(TAG, "Name: " + updatedUserInfo.getUserName());
+                    Log.d(TAG, "Phone Number: " + updatedUserInfo.getPhoneNumber());
+
+                    ArrayList<GroupInfo> groupList = updatedUserInfo.getGroupList();
+                    if (groupList != null && !groupList.isEmpty()) {
+                        Log.d(TAG, "Group List size: " + groupList.size());
+                        for (GroupInfo group : groupList) {
+                            Log.d(TAG, "Group Name: " + group.getGroupName());
+                            Log.d(TAG, "Group Key: " + group.getGroupKey());
+                        }
+                    } else {
+                        Log.d(TAG, "Group List is null or empty");
+                    }
+
+                    // 그룹 리스트 업데이트
+                    updateGroupList(updatedUserInfo);
+                    Toast.makeText(getContext(), "그룹 삭제 성공", Toast.LENGTH_SHORT).show();
+                } else {
+                    // 응답 상태 코드와 응답 본문을 추가로 로그에 기록
+                    Log.d(TAG, "Response unsuccessful. Code: " + response.code() + ", Message: " + response.message());
+                    Toast.makeText(getContext(), "그룹 삭제 실패", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserInfo> call, Throwable t) {
+                Toast.makeText(getContext(), "그룹 삭제 실패: 서버 오류", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "그룹 삭제 실패", t);
+            }
+        });
+    }
+
+    //그룹 삭제
+    public void deleteGroupMember(GroupInfo group, GroupMember member) {
+        UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+        if (userInfo.getUserEmail().isEmpty()) {
+            Toast.makeText(getContext(), "로그인 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DeleteGroupMemberRequest request = new DeleteGroupMemberRequest(userInfo, group.getGroupName(), member.getMemberEmail());
+
+        apiService.deleteGroupMember(request).enqueue(new Callback<UserInfo>() {
+            @Override
+            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserInfo updatedUserInfo = response.body();
+                    sharedPreferencesHelper.saveUserInfo(updatedUserInfo);
+
+                    Log.d(TAG, "Email: " + updatedUserInfo.getUserEmail());
+                    Log.d(TAG, "Name: " + updatedUserInfo.getUserName());
+                    Log.d(TAG, "Phone Number: " + updatedUserInfo.getPhoneNumber());
+
+                    ArrayList<GroupInfo> groupList = updatedUserInfo.getGroupList();
+                    if (groupList != null && !groupList.isEmpty()) {
+                        Log.d(TAG, "Group List size: " + groupList.size());
+                        for (GroupInfo group : groupList) {
+                            Log.d(TAG, "Group Name: " + group.getGroupName());
+                            Log.d(TAG, "Group Key: " + group.getGroupKey());
+                        }
+                    } else {
+                        Log.d(TAG, "Group List is null or empty");
+                    }
+
+                    // 그룹 리스트 업데이트
+                    updateGroupList(updatedUserInfo);
+                    Toast.makeText(getContext(), "멤버 삭제 성공", Toast.LENGTH_SHORT).show();
+                } else {
+                    // 응답 상태 코드와 응답 본문을 추가로 로그에 기록
+                    Log.d(TAG, "Response unsuccessful. Code: " + response.code() + ", Message: " + response.message());
+                    Toast.makeText(getContext(), "멤버 삭제 실패", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserInfo> call, Throwable t) {
+                Toast.makeText(getContext(), "멤버 삭제 실패: 서버 오류", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "멤버 삭제 실패", t);
+            }
+        });
+    }
+
+    // SharedPreferencesHelper 접근자 추가
+    public SharedPreferencesHelper getSharedPreferencesHelper() {
+        return sharedPreferencesHelper;
     }
 }

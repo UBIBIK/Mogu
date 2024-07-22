@@ -1,14 +1,62 @@
-<!-- res/layout/group_item.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="8dp">
 
+    <!-- 그룹 이름을 표시하는 텍스트 뷰 -->
     <TextView
         android:id="@+id/group_name"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:textColor="@android:color/black" />
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:clickable="true" />
+
+    <!-- 확장된 그룹 정보를 표시하는 레이아웃 -->
+    <LinearLayout
+        android:id="@+id/expanded_view"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:padding="8dp"
+        android:background="#f0f0f0">
+
+        <LinearLayout
+            android:id="@+id/group_members_list"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:textSize="20sp">
+        </LinearLayout>
+
+        <!-- 그룹 삭제 버튼 (그룹장에게만 표시) -->
+        <Button
+            android:id="@+id/btn_delete_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="그룹 삭제"
+            android:visibility="gone"
+            android:background="@android:color/holo_red_light"
+            android:textColor="@android:color/white"
+            android:padding="4dp" />
+
+        <!-- 초대코드 복사 버튼 -->
+        <Button
+            android:id="@+id/btn_copy_invite_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="초대코드 복사" />
+
+        <!-- 닫기 버튼 -->
+        <Button
+            android:id="@+id/btn_close"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="닫기" />
+    </LinearLayout>
 </LinearLayout>

@@ -8,6 +8,7 @@ public class GroupInfo {
     private String gmEmail;
     private String gmName;
     private ArrayList<GroupMember> groupMember = new ArrayList<>();
+    private boolean isExpanded; // 그룹 확장 상태 필드 추가
 
     public GroupInfo() {}
 
@@ -17,6 +18,7 @@ public class GroupInfo {
         this.gmEmail = gmEmail;
         this.gmName = gmName;
         this.groupMember = groupMember;
+        this.isExpanded = false; // 기본값은 확장되지 않은 상태
     }
 
     public String getGroupName() {
@@ -57,5 +59,13 @@ public class GroupInfo {
 
     public void setGroupMember(ArrayList<GroupMember> groupMember) {
         this.groupMember = groupMember;
+    }
+
+    public boolean isExpanded() {
+        return isExpanded;
+    }
+
+    public void setExpanded(boolean expanded) {
+        isExpanded = expanded;
     }
 }

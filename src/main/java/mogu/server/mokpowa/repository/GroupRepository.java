@@ -1,10 +1,8 @@
 package mogu.server.mokpowa.repository;
 
-import mogu.server.mokpowa.dto.DeleteGroupMemberRequest;
-import mogu.server.mokpowa.dto.DeleteGroupRequest;
 import mogu.server.mokpowa.dto.GroupInfo;
-import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.dto.UserInfo;
+import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.entity.User;
 
 import java.util.ArrayList;

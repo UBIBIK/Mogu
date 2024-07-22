@@ -19,7 +19,7 @@ public class Group extends GroupInfo {
     @NonNull
     private String gmEmail;
     private String gmName;
-    private ArrayList<GroupMember> GroupMember = new ArrayList<>();
+    private ArrayList<GroupMember> groupMember = new ArrayList<>();
 
     public Group() {}
 

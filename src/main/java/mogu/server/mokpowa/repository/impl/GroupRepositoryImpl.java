@@ -3,7 +3,9 @@ package mogu.server.mokpowa.repository.impl;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
-import mogu.server.mokpowa.dto.*;
+import mogu.server.mokpowa.dto.GroupInfo;
+import mogu.server.mokpowa.dto.GroupMember;
+import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.repository.GroupRepository;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class GroupRepositoryImpl implements GroupRepository {
@@ -180,7 +181,7 @@ public class GroupRepositoryImpl implements GroupRepository {
             // 그룹 삭제
             document.getReference().delete();
 
-            // userInfo 업데이트
+            // userIn업데이트
             Iterator<GroupInfo> groupIterator = user.getGroupList().iterator();
             while (groupIterator.hasNext()) {
                 GroupInfo groupInfo = groupIterator.next();
@@ -197,27 +198,47 @@ public class GroupRepositoryImpl implements GroupRepository {
 
     @Override
     public UserInfo deleteGroupMember(String deleteGroupName, String deleteGroupMemberEmail, UserInfo user) throws Exception {
+        // 삭제하려는 멤버가 존재하는지 확인
         ApiFuture<QuerySnapshot> userQuerySnapshot = firestore.collection("users").whereEqualTo("userEmail", deleteGroupMemberEmail).get();
-
-        // 삭제하려는 멤버가 그룹에 존재하는지 확인
         if (userQuerySnapshot.get().getDocuments().isEmpty()) {
             throw new Exception("해당 유저는 존재하지 않습니다.");
         }
 
-        Query groupQuery = firestore.collection(COLLECTION_NAME).whereEqualTo("groupName", deleteGroupName);
-        ApiFuture<QuerySnapshot> querySnapshot = groupQuery.get();
-
-        // 그룹 이름이 데이터베이스에 존재하는지 확인
-        if (querySnapshot.get().getDocuments().isEmpty()) {
+        // 그룹이 존재하는지 확인
+        ApiFuture<QuerySnapshot> groupQuerySnapshot = firestore.collection(COLLECTION_NAME).whereEqualTo("groupName", deleteGroupName).get();
+        if (groupQuerySnapshot.get().getDocuments().isEmpty()) {
             throw new Exception("해당 그룹은 존재하지 않습니다.");
         }
 
-        for (GroupInfo groupInfo : user.getGroupList()) {
-            groupInfo.getGroupMember().removeIf(member -> member.getMemberEmail().equals(deleteGroupMemberEmail));
-            user.getGroupList().remove(groupInfo);
+        DocumentSnapshot document = groupQuerySnapshot.get().getDocuments().getFirst();
+        if (document.exists()) {
+            String groupKey = document.getString("groupKey");
+
+            // Firestore Transaction를 사용하여 원자적으로 각 문서 업데이트
+            firestore.runTransaction(transaction -> {
+                // 해당 그룹 유저 정보 업데이트
+                List<User> userList = userRepository.getUsers();
+                for (User findUser : userList) {
+                    if (findUser.getUserEmail().equals(deleteGroupMemberEmail)) {
+                        findUser.getGroupKeyList().removeIf(key -> key.equals(groupKey));
+                        userRepository.updateUser(findUser); // 모든 사용자를 업데이트
+                    }
+                }
+
+                // 그룹 멤버 삭제
+                for (GroupInfo groupInfo : user.getGroupList()) {
+                    if (groupInfo.getGroupName().equals(deleteGroupName)) {
+                        groupInfo.getGroupMember().removeIf(member -> member.getMemberEmail().equals(deleteGroupMemberEmail));
+                        Group group = new Group(groupInfo.getGroupName(), groupInfo.getGroupKey(), groupInfo.getGmEmail(), groupInfo.getGmName(), groupInfo.getGroupMember());
+                        updateGroup(group);
+                        break;
+                    }
+                }
+                return null;
+            }).get();
 
             return user;
         }
-        throw new Exception("해당 멤버가 존재하지 않습니다.");
+        throw new Exception("해당 문서가 존재하지 않습니다.");
     }
 }

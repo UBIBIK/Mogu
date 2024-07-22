@@ -2,15 +2,14 @@ package mogu.server.mokpowa.RepositoryTest;
 
 import mogu.server.mokpowa.dto.GroupInfo;
 import mogu.server.mokpowa.dto.GroupMember;
-import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.dto.UserInfo;
+import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.repository.GroupRepository;
 import mogu.server.mokpowa.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +20,7 @@ public class GroupRepositoryTest {
     private static final String TEST_GROUP_MASTER_NAME = "test1";
     private static final String TEST_GROUP_MEMBER_EMAIL = "test2";
     private static final String TEST_GROUP_MEMBER_NAME = "test2";
-    private static final String TEST_GROUP_KEY = "t2gowjpr8cbbrw87";
+    private static final String TEST_GROUP_KEY = "ic2v56v9fyagn2xk";
 
     @Autowired
     private GroupRepository groupRepository;

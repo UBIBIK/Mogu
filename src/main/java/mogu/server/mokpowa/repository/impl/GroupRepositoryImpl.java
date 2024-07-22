@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -159,17 +160,18 @@ public class GroupRepositoryImpl implements GroupRepository {
             throw new Exception("해당 그룹이 존재하지 않습니다.");
         }
 
-        DocumentSnapshot document = querySnapshot.get().getDocuments().getFirst();
-        if(document.exists()){
+        DocumentSnapshot document = querySnapshot.get().getDocuments().get(0);
+        if (document.exists()) {
             String groupKey = (String) document.get("groupKey");
 
             // 해당 그룹 유저들 정보 업데이트
             List<User> userList = userRepository.getUsers();
-            for(User findUser : userList) {
-                for(String findGroupKey : findUser.getGroupKeyList()) {
-                    if(findGroupKey.equals(groupKey)) {
-                        // 해당 그룹키를 제거
-                        findUser.getGroupKeyList().removeIf(key -> key.equals(groupKey));
+            for (User findUser : userList) {
+                Iterator<String> iterator = findUser.getGroupKeyList().iterator();
+                while (iterator.hasNext()) {
+                    String findGroupKey = iterator.next();
+                    if (findGroupKey.equals(groupKey)) {
+                        iterator.remove();
                         userRepository.updateUser(findUser);
                     }
                 }
@@ -179,11 +181,19 @@ public class GroupRepositoryImpl implements GroupRepository {
             document.getReference().delete();
 
             // userInfo 업데이트
-            user.getGroupList().removeIf(groupInfo -> groupInfo.getGroupKey().equals(groupKey));
+            Iterator<GroupInfo> groupIterator = user.getGroupList().iterator();
+            while (groupIterator.hasNext()) {
+                GroupInfo groupInfo = groupIterator.next();
+                if (groupInfo.getGroupKey().equals(groupKey)) {
+                    groupIterator.remove();
+                }
+            }
+
             return user;
         }
         throw new Exception("해당 문서가 존재하지 않습니다.");
     }
+
 
     @Override
     public UserInfo deleteGroupMember(String deleteGroupName, String deleteGroupMemberEmail, UserInfo user) throws Exception {

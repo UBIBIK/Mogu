@@ -117,16 +117,32 @@ public class AndroidController {
     // 그룹 삭제
     @PostMapping("/api/DeleteGroup")
     public ResponseEntity<UserInfo> deleteGroup(@RequestBody DeleteGroupRequest request) throws Exception {
-        request.setUserInfo(groupRepository.deleteGroup(request.getGroupName(), request.getUserInfo()));
-        for(GroupInfo groupInfo : request.getUserInfo().getGroupList()) {
-            log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
+        UserInfo userInfoBeforeDeletion = request.getUserInfo();
+
+        log.info("그룹 삭제 요청 받음 - 사용자: {}, 그룹: {}", userInfoBeforeDeletion.getUserEmail(), request.getGroupName());
+
+        log.info("삭제 전 그룹 목록");
+        for (GroupInfo groupInfo : userInfoBeforeDeletion.getGroupList()) {
+            log.info("그룹명: {}", groupInfo.getGroupName());
         }
 
-        return ResponseEntity.ok(request.getUserInfo());
+        // 그룹 삭제 수행
+        UserInfo updatedUserInfo = groupRepository.deleteGroup(request.getGroupName(), userInfoBeforeDeletion);
+        request.setUserInfo(updatedUserInfo);
+
+        log.info("그룹 삭제 완료 - 사용자: {}, 삭제된 그룹: {}", updatedUserInfo.getUserEmail(), request.getGroupName());
+
+        log.info("삭제 후 그룹 목록");
+        for (GroupInfo groupInfo : updatedUserInfo.getGroupList()) {
+            log.info("그룹명: {}", groupInfo.getGroupName());
+        }
+
+        return ResponseEntity.ok(updatedUserInfo);
     }
 
+
     // 그룹 멤버 삭제
-    @PostMapping
+    @PostMapping("/api/DeleteGroupMember")
     public ResponseEntity<UserInfo> deleteGroupMember(@RequestBody DeleteGroupMemberRequest request) throws Exception {
         request.setUserInfo(groupRepository.deleteGroupMember(request.getGroupName(), request.getDeleteMemberEmail(), request.getUserInfo()));
         for(GroupInfo groupInfo : request.getUserInfo().getGroupList()) {

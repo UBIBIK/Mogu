@@ -10,7 +10,7 @@ public class DeleteGroupMemberRequest {
     public DeleteGroupMemberRequest(UserInfo userInfo, String groupName, String deleteMemberEmail) {
         this.userInfo = userInfo;
         this.groupName = groupName;
-        this.deleteMemberEmail = getDeleteMemberEmail();
+        this.deleteMemberEmail = deleteMemberEmail;
     }
 
     public UserInfo getUserInfo() {

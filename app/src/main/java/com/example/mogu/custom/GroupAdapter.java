@@ -67,6 +67,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         Button btnCopyInviteCode;
         Button btnDeleteGroup;
         Button btnClose;
+        Button btnManageSchedule;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -76,6 +77,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
             btnCopyInviteCode = itemView.findViewById(R.id.btn_copy_invite_code);
             btnDeleteGroup = itemView.findViewById(R.id.btn_delete_group);
             btnClose = itemView.findViewById(R.id.btn_close);
+            btnManageSchedule = itemView.findViewById(R.id.btn_manage_schedule);
         }
 
         void bind(GroupInfo group) {
@@ -127,6 +129,17 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
                 btnDeleteGroup.setOnClickListener(v -> fragment.deleteGroup(group));
             } else {
                 btnDeleteGroup.setVisibility(View.GONE);
+            }
+
+            // 그룹이 확장되었을 때 일정관리 버튼을 표시
+            if (isGroupExpanded) {
+                btnManageSchedule.setVisibility(View.VISIBLE);
+                btnManageSchedule.setOnClickListener(v -> {
+                    // 일정관리 화면으로 이동하는 로직 추가
+                    //TODO:fragment.manageSchedule(group);
+                });
+            } else {
+                btnManageSchedule.setVisibility(View.GONE);
             }
         }
     }

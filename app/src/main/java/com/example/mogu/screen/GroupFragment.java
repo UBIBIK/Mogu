@@ -322,6 +322,9 @@ public class GroupFragment extends Fragment {
             return;
         }
 
+        Log.d(TAG, "Email: " + member.getMemberEmail());
+        Log.d(TAG, "Name: " + member.getMemberName());
+
         DeleteGroupMemberRequest request = new DeleteGroupMemberRequest(userInfo, group.getGroupName(), member.getMemberEmail());
 
         apiService.deleteGroupMember(request).enqueue(new Callback<UserInfo>() {

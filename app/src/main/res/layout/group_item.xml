@@ -5,15 +5,32 @@
     android:padding="8dp">
 
     <!-- 그룹 이름을 표시하는 텍스트 뷰 -->
-    <TextView
-        android:id="@+id/group_name"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:orientation="horizontal"
         android:padding="8dp"
         android:background="?android:attr/selectableItemBackground"
-        android:clickable="true" />
+        android:clickable="true">
+
+        <TextView
+            android:id="@+id/group_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:background="#48bbed"
+            android:textColor="#ffffff"/>
+
+        <Button
+            android:id="@+id/btn_manage_schedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="일정관리"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <!-- 확장된 그룹 정보를 표시하는 레이아웃 -->
     <LinearLayout
@@ -25,14 +42,14 @@
         android:padding="8dp"
         android:background="#f0f0f0">
 
+        <!-- 그룹 멤버 리스트 -->
         <LinearLayout
             android:id="@+id/group_members_list"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:textSize="20sp">
-        </LinearLayout>
+            android:textSize="20sp"/>
 
         <!-- 그룹 삭제 버튼 (그룹장에게만 표시) -->
         <Button

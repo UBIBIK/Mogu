@@ -314,7 +314,7 @@ public class GroupFragment extends Fragment {
         });
     }
 
-    //그룹 삭제
+    //그룹 멤버 삭제
     public void deleteGroupMember(GroupInfo group, GroupMember member) {
         UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
         if (userInfo.getUserEmail().isEmpty()) {

@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
@@ -101,9 +102,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
                 if (isLeader && !member.getMemberEmail().equals(userInfo.getUserEmail())) {
                     btnDeleteMember.setVisibility(View.VISIBLE);
-                    btnDeleteMember.setOnClickListener(v -> {
-                        fragment.deleteGroupMember(group, member);
-                    });
+                    btnDeleteMember.setOnClickListener(v -> showDeleteMemberConfirmationDialog(group, member));
                 } else {
                     btnDeleteMember.setVisibility(View.GONE);
                 }
@@ -126,7 +125,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
             // 그룹 삭제 버튼을 그룹장에게만 표시
             if (isLeader) {
                 btnDeleteGroup.setVisibility(View.VISIBLE);
-                btnDeleteGroup.setOnClickListener(v -> fragment.deleteGroup(group));
+                btnDeleteGroup.setOnClickListener(v -> showDeleteGroupConfirmationDialog(group));
             } else {
                 btnDeleteGroup.setVisibility(View.GONE);
             }
@@ -136,11 +135,29 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
                 btnManageSchedule.setVisibility(View.VISIBLE);
                 btnManageSchedule.setOnClickListener(v -> {
                     // 일정관리 화면으로 이동하는 로직 추가
-                    //TODO:fragment.manageSchedule(group);
+                    // TODO: fragment.manageSchedule(group);
                 });
             } else {
                 btnManageSchedule.setVisibility(View.GONE);
             }
+        }
+
+        private void showDeleteMemberConfirmationDialog(GroupInfo group, GroupMember member) {
+            new AlertDialog.Builder(itemView.getContext())
+                    .setTitle("멤버 삭제")
+                    .setMessage("멤버를 삭제하시겠습니까?")
+                    .setPositiveButton("삭제", (dialog, which) -> fragment.deleteGroupMember(group, member))
+                    .setNegativeButton("취소", null)
+                    .show();
+        }
+
+        private void showDeleteGroupConfirmationDialog(GroupInfo group) {
+            new AlertDialog.Builder(itemView.getContext())
+                    .setTitle("그룹 삭제")
+                    .setMessage("그룹을 삭제하시겠습니까?")
+                    .setPositiveButton("삭제", (dialog, which) -> fragment.deleteGroup(group))
+                    .setNegativeButton("취소", null)
+                    .show();
         }
     }
 }

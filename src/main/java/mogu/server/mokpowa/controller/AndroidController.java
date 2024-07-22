@@ -144,18 +144,23 @@ public class AndroidController {
     // 그룹 멤버 삭제
     @PostMapping("/api/DeleteGroupMember")
     public ResponseEntity<UserInfo> deleteGroupMember(@RequestBody DeleteGroupMemberRequest request) throws Exception {
-        request.setUserInfo(groupRepository.deleteGroupMember(request.getGroupName(), request.getDeleteMemberEmail(), request.getUserInfo()));
-        for(GroupInfo groupInfo : request.getUserInfo().getGroupList()) {
-            if(groupInfo.getGroupName().equals(request.getGroupName())) {
-                ArrayList<GroupMember> groupMembers = groupInfo.getGroupMember();
-                for (GroupMember groupMember : groupMembers) {
-                    log.info("그룹 멤버 : {}", groupMember.getMemberEmail());
-                }
+        log.info("DeleteGroupMemberRequest 수신: 그룹명: {}, 삭제할 멤버 이메일: {}", request.getGroupName(), request.getDeleteMemberEmail());
+
+        UserInfo updatedUserInfo = groupRepository.deleteGroupMember(request.getGroupName(), request.getDeleteMemberEmail(), request.getUserInfo());
+        request.setUserInfo(updatedUserInfo);
+
+        log.info("deleteGroupMember 호출 후 업데이트된 UserInfo");
+        for(GroupInfo groupInfo : updatedUserInfo.getGroupList()) {
+            log.info("그룹: {}", groupInfo.getGroupName());
+            for (GroupMember groupMember : groupInfo.getGroupMember()) {
+                log.info("그룹 멤버: {}", groupMember.getMemberEmail());
             }
         }
 
-        return ResponseEntity.ok(request.getUserInfo());
+        log.info("업데이트된 UserInfo 반환: 이메일: {}", updatedUserInfo.getUserEmail());
+        return ResponseEntity.ok(updatedUserInfo);
     }
+
 
     // 난수 생성 함수
     public String randomNumber() {

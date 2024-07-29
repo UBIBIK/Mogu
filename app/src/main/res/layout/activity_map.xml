@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 상단 컨텐츠 -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.kakao.vectormap.MapView
+            android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </FrameLayout>
+
+    <!-- 하단 시트 -->
+    <FrameLayout
+        android:id="@+id/bottomSheetContainer"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_gravity="bottom"
+        android:background="@android:color/white"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Drag Handle -->
+            <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"/>
+
+            <!-- 날짜 버튼들을 담을 HorizontalScrollView -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:id="@+id/dateInfoLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+
+            </HorizontalScrollView>
+
+            <!-- 버튼과 메모를 왼쪽 정렬로 배치하는 LinearLayout -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp"
+                android:gravity="start">
+
+                <!-- 장소 추가 버튼 -->
+                <Button
+                    android:id="@+id/addPlaceButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="장소 추가"
+                    android:background="@drawable/rounded_button_selected"
+                    android:textColor="@drawable/button_text_selected"
+                    android:padding="12dp"
+                    android:textSize="14sp"
+                    android:textAllCaps="true"
+                    android:layout_gravity="start" />
+
+                <!-- 메모 추가 버튼과 텍스트뷰를 수평으로 배치하는 LinearLayout -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:gravity="start">
+
+                    <!-- 메모 추가 버튼 -->
+                    <Button
+                        android:id="@+id/addNoteButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="메모 추가"
+                        android:background="@drawable/rounded_button_selected"
+                        android:textColor="@drawable/button_text_selected"
+                        android:padding="12dp"
+                        android:textSize="14sp"
+                        android:textAllCaps="true" />
+
+                    <!-- 저장된 메모를 표시할 텍스트뷰 -->
+                    <TextView
+                        android:id="@+id/noteTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text=""
+                        android:gravity="start"/>
+                </LinearLayout>
+
+                <!-- 저장 버튼 -->
+                <Button
+                    android:id="@+id/saveButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="저장"
+                    android:background="@drawable/rounded_button_selected"
+                    android:textColor="@drawable/button_text_selected"
+                    android:padding="12dp"
+                    android:textSize="14sp"
+                    android:textAllCaps="true"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- 하단 시트 열기/닫기 버튼 -->
+    <Button
+        android:id="@+id/toggleBottomSheetButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:text="하단 시트 열기"
+        android:background="@drawable/rounded_button_selected"
+        android:textColor="@drawable/button_text_selected"/>
+
+    <!-- 메모 입력을 위한 팝업 창 -->
+    <LinearLayout
+        android:id="@+id/notePopupLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@android:color/white"
+            android:padding="16dp"
+            android:elevation="4dp">
+
+            <EditText
+                android:id="@+id/popupNoteEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="메모 입력"/>
+
+            <Button
+                android:id="@+id/popupSaveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="16dp"
+                android:text="저장"
+                android:background="@drawable/rounded_button_selected"
+                android:textColor="@drawable/button_text_selected"
+                android:padding="12dp"
+                android:textSize="14sp"
+                android:textAllCaps="true"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

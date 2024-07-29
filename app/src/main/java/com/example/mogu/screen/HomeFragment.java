@@ -41,7 +41,8 @@ public class HomeFragment extends Fragment {
     private static final int CONTENT_TYPE_ID2 = 12;
     private static final int AREA_CODE = 38;
     private static final int SIGUNGU_CODE = 8;
-    private static final String SERVICE_URL = "http://api.visitkorea.or.kr/openapi/service/rest/KorService/areaBasedList";
+    private static final String OVERVIEWYN = "Y";
+    private static final String SERVICE_URL = "http://apis.data.go.kr/B551011/KorService1/areaBasedList1";
     private static final String SERVICE_KEY = "iYq%2FBTYJSMKmITGfxxEBnluf6wJSfDjyGv8HUQJCYnqLkGKt%2BGTq4mNkwGDB5gEofiE34ur%2Fen1s7Nq1xWuLeg%3D%3D";
 
     private ViewPager2 viewPager;
@@ -69,7 +70,7 @@ public class HomeFragment extends Fragment {
                 "&arrange=" + ARRANGE +
                 "&contentTypeId=" + CONTENT_TYPE_ID +
                 "&areaCode=" + AREA_CODE +
-                "&sigunguCode=" + SIGUNGU_CODE +
+                "&sigunguCode=" + SIGUNGU_CODE+
                 "&listYN=" + LIST_YN;
 
         String requestUrl2 = SERVICE_URL +
@@ -81,7 +82,7 @@ public class HomeFragment extends Fragment {
                 "&arrange=" + ARRANGE +
                 "&contentTypeId=" + CONTENT_TYPE_ID2 +
                 "&areaCode=" + AREA_CODE +
-                "&sigunguCode=" + SIGUNGU_CODE +
+                "&sigunguCode=" + SIGUNGU_CODE+
                 "&listYN=" + LIST_YN;
 
         fetchXML(requestUrl1, CONTENT_TYPE_ID);
@@ -121,11 +122,13 @@ public class HomeFragment extends Fragment {
                 boolean tagTitle = false;
                 boolean tagAddr1 = false;
                 boolean tagAddr2 = false;
+                boolean tagcontentid = false;
 
                 String firstimage = "";
                 String title = "";
                 String addr1 = "";
                 String addr2 = "";
+                String contentid = "";
 
                 try {
                     XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -141,6 +144,7 @@ public class HomeFragment extends Fragment {
                             if (tagName.equals("title")) tagTitle = true;
                             if (tagName.equals("addr1")) tagAddr1 = true;
                             if (tagName.equals("addr2")) tagAddr2 = true;
+                            if (tagName.equals("contentid")) tagcontentid = true;
                         } else if (eventType == XmlPullParser.TEXT) {
                             if (tagImage) {
                                 firstimage = xpp.getText();
@@ -158,11 +162,14 @@ public class HomeFragment extends Fragment {
                                 addr2 = xpp.getText();
                                 tagAddr2 = false;
                             }
-
+                            if (tagcontentid){
+                                contentid = xpp.getText();
+                                tagcontentid = false;
+                            }
                         } else if (eventType == XmlPullParser.END_TAG) {
                             if (xpp.getName().equals("item")) {
                                 if (firstimage.contains("http")) {
-                                    TourApi item = new TourApi(firstimage, title, addr1, addr2);
+                                    TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid);
                                     itemList.add(item);
                                 }
                             }

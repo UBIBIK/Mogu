@@ -21,7 +21,7 @@
 
         <!-- MainActivity 설정 -->
         <activity
-            android:name=".screen.MainActivity"
+            android:name=".screen.CalendarActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,6 +32,7 @@
         <!-- SignUp 화면으로 가기 위한 설정 추가 -->
         <activity android:name=".screen.SignUp"></activity>
         <activity android:name=".screen.HomeActivity"></activity>
+        <activity android:name=".screen.MapActivity"></activity>
 
         <!-- Kakao SDK 초기화를 위한 설정 -->
         <meta-data

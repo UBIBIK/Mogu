@@ -32,6 +32,8 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("com.kakao.maps.open:android:2.9.5")
     // UI 관련 라이브러리
     implementation("me.relex:circleindicator:2.1.6") // Circle Indicator
     implementation("androidx.recyclerview:recyclerview:1.3.2") // RecyclerView
@@ -42,7 +44,8 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.0.0") // ViewPager2
 
     // 이미지 로딩 라이브러리
-    implementation("com.github.bumptech.glide:glide:4.11.0") // Glide
+    implementation("com.github.bumptech.glide:glide:4.11.0")
+    implementation(libs.play.services.maps) // Glide
     annotationProcessor("com.github.bumptech.glide:compiler:4.11.0") // Glide Annotation Processor
 
     // 네트워크 관련 라이브러리
@@ -57,4 +60,5 @@ dependencies {
     testImplementation(libs.junit) // JUnit
     androidTestImplementation(libs.ext.junit) // AndroidX JUnit
     androidTestImplementation(libs.espresso.core) // Espresso
+
 }

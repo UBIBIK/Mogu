@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".screen.home">
+    tools:context=".screen.HomeActivity">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -21,6 +21,7 @@
             android:layout_marginBottom="220dp"
             android:gravity="center"
             android:text="목포축제공연행사"
+            android:fontFamily="@font/pretendard"
             android:textColor="#48BBED"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -32,6 +33,7 @@
             android:layout_marginTop="45dp"
             android:clipChildren="false"
             android:clipToPadding="false"
+            android:fontFamily="@font/pretendard"
             android:scaleType="fitXY" />
 
         <me.relex.circleindicator.CircleIndicator3
@@ -49,6 +51,7 @@
             android:gravity="center"
             android:padding="80dp"
             android:text="목포관광지"
+            android:fontFamily="@font/pretendard"
             android:textSize="18sp"
             android:textColor="#48BBED"
             android:layout_marginTop="360dp"
@@ -60,6 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="470dp"
+            android:fontFamily="@font/pretendard"
             android:orientation="vertical" />
     </FrameLayout>
 

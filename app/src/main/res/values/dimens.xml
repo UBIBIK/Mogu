@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 하단 시트의 기본 높이 -->
+    <dimen name="bottom_sheet_peek_height">200dp</dimen>
+</resources>

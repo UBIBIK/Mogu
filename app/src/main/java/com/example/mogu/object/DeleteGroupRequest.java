@@ -1,12 +1,12 @@
 package com.example.mogu.object;
 
-public class CreateGroupRequest {
+public class DeleteGroupRequest {
     private UserInfo userInfo;
     private String groupName;
 
-    public CreateGroupRequest() {}
+    public DeleteGroupRequest() {}
 
-    public CreateGroupRequest(UserInfo userInfo, String groupName) {
+    public DeleteGroupRequest(UserInfo userInfo, String groupName) {
         this.userInfo = userInfo;
         this.groupName = groupName;
     }
@@ -23,5 +23,7 @@ public class CreateGroupRequest {
         return groupName;
     }
 
-    public void setGroupName(String groupName) { this.groupName = groupName; }
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
 }

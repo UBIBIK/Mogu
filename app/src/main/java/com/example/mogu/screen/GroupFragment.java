@@ -19,10 +19,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mogu.R;
 import com.example.mogu.custom.GroupAdapter;
 import com.example.mogu.object.CreateGroupRequest;
+import com.example.mogu.object.DeleteGroupMemberRequest;
+import com.example.mogu.object.DeleteGroupRequest;
+import com.example.mogu.object.GroupInfo;
+import com.example.mogu.object.GroupMember;
+import com.example.mogu.object.JoinGroupRequest;
 import com.example.mogu.object.UserInfo;
 import com.example.mogu.retrofit.ApiService;
 import com.example.mogu.retrofit.RetrofitClient;
 import com.example.mogu.share.SharedPreferencesHelper;
+
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,25 +37,28 @@ import retrofit2.Response;
 
 public class GroupFragment extends Fragment {
 
-    private static final String TAG = "GroupFragment";
-    private RecyclerView groupRecyclerView;
-    private GroupAdapter groupAdapter;
-    private ApiService apiService;
-    private SharedPreferencesHelper sharedPreferencesHelper;
+    private static final String TAG = "GroupFragment"; // 로그 태그
+    private GroupAdapter groupAdapter; // 그룹 리스트를 위한 어댑터
+    private ApiService apiService; // API 호출을 위한 서비스
+    private SharedPreferencesHelper sharedPreferencesHelper; // 사용자 정보 저장을 위한 헬퍼 클래스
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // 프래그먼트의 레이아웃을 인플레이트하여 뷰 생성
         View view = inflater.inflate(R.layout.group, container, false);
 
-        groupRecyclerView = view.findViewById(R.id.groupRecyclerView);
+        // RecyclerView 초기화
+        RecyclerView groupRecyclerView = view.findViewById(R.id.groupRecyclerView);
         groupRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        groupAdapter = new GroupAdapter();
+        groupAdapter = new GroupAdapter(this); // GroupFragment를 참조로 전달
         groupRecyclerView.setAdapter(groupAdapter);
 
+        // ApiService 및 SharedPreferencesHelper 초기화
         apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
         sharedPreferencesHelper = new SharedPreferencesHelper(getContext());
 
+        // FloatingActionButton 클릭 리스너 설정
         Button fab = view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,33 +70,63 @@ public class GroupFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // 사용자 정보 로드
+        loadSavedUserInfo();
+    }
+
+    // 저장된 사용자 정보를 로드하는 메서드
+    private void loadSavedUserInfo() {
+        UserInfo savedUserInfo = sharedPreferencesHelper.getUserInfo();
+        if (savedUserInfo != null) {
+            // 그룹 리스트 가져오기
+            ArrayList<GroupInfo> groupList = savedUserInfo.getGroupList();
+            if (groupList != null && !groupList.isEmpty()) {
+                Log.d(TAG, "Group List size: " + groupList.size());
+                for (GroupInfo group : groupList) {
+                    Log.d(TAG, "Group Name: " + group.getGroupName());
+                    Log.d(TAG, "Group Key: " + group.getGroupKey());
+                }
+                // 그룹 리스트 업데이트
+                updateGroupList(savedUserInfo);
+            } else {
+                Log.d(TAG, "Group List is null or empty");
+            }
+        } else {
+            Log.d(TAG, "No saved user info found");
+        }
+    }
+
+    // 팝업을 표시하는 메서드
     private void showPopup() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("그룹 관리")
                 .setItems(new String[]{"그룹 생성", "그룹 참가"}, (dialog, which) -> {
-                    switch (which) {
-                        case 0:
-                            showGroupNameInputDialog();
-                            break;
-                        case 1:
-                            Toast.makeText(getContext(), "그룹 참가 선택", Toast.LENGTH_SHORT).show();
-                            break;
+                    if (which == 0) {
+                        // 그룹 생성 다이얼로그 표시
+                        showGroupNameInputDialog();
+                    } else {
+                        // 그룹 참가 다이얼로그 표시
+                        showGroupKeyInputDialog();
                     }
                 });
         builder.create().show();
     }
 
+    // 그룹 이름 입력 다이얼로그를 표시하는 메서드
     private void showGroupNameInputDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("그룹 이름 입력");
 
-        // 그룹 이름 입력 필드 추가
         final EditText input = new EditText(getContext());
         builder.setView(input);
 
         builder.setPositiveButton("생성", (dialog, which) -> {
-            String groupName = input.getText().toString();
+            String groupName = input.getText().toString().trim();
             if (!groupName.isEmpty()) {
+                // 그룹 생성 요청
                 createGroup(groupName);
             } else {
                 Toast.makeText(getContext(), "그룹 이름을 입력하세요.", Toast.LENGTH_SHORT).show();
@@ -98,6 +138,30 @@ public class GroupFragment extends Fragment {
         builder.show();
     }
 
+    // 그룹 키 입력 다이얼로그를 표시하는 메서드
+    private void showGroupKeyInputDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("그룹 키 입력");
+
+        final EditText input = new EditText(getContext());
+        builder.setView(input);
+
+        builder.setPositiveButton("참가", (dialog, which) -> {
+            String groupKey = input.getText().toString().trim();
+            if (!groupKey.isEmpty()) {
+                // 그룹 참가 요청
+                joinGroup(groupKey);
+            } else {
+                Toast.makeText(getContext(), "그룹 키를 입력하세요.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("취소", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    // 그룹을 생성하는 메서드
     private void createGroup(String groupName) {
         UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
         if (userInfo.getUserEmail().isEmpty()) {
@@ -105,41 +169,206 @@ public class GroupFragment extends Fragment {
             return;
         }
 
-        // UserInfo에 그룹 이름을 추가하는 새로운 클래스 작성 (CreateGroupRequest)
         CreateGroupRequest request = new CreateGroupRequest(userInfo, groupName);
 
         apiService.createGroup(request).enqueue(new Callback<UserInfo>() {
             @Override
             public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null) {
                     UserInfo updatedUserInfo = response.body();
                     sharedPreferencesHelper.saveUserInfo(updatedUserInfo);
 
-                    // 서버에서 받아온 UserInfo 객체의 정보를 로그로 출력
-                    Log.d("UserInfo", "Email: " + updatedUserInfo.getUserEmail());
-                    Log.d("UserInfo", "Name: " + updatedUserInfo.getUserName());
-                    Log.d("UserInfo", "Phone Number: " + updatedUserInfo.getPhoneNumber());
-                    Log.d("UserInfo", "Group Keys: " + updatedUserInfo.getGroupKeyList().toString());
+                    Log.d(TAG, "Email: " + updatedUserInfo.getUserEmail());
+                    Log.d(TAG, "Name: " + updatedUserInfo.getUserName());
+                    Log.d(TAG, "Phone Number: " + updatedUserInfo.getPhoneNumber());
+
+                    ArrayList<GroupInfo> groupList = updatedUserInfo.getGroupList();
+                    if (groupList != null && !groupList.isEmpty()) {
+                        Log.d(TAG, "Group List size: " + groupList.size());
+                        for (GroupInfo group : groupList) {
+                            Log.d(TAG, "Group Name: " + group.getGroupName());
+                            Log.d(TAG, "Group Key: " + group.getGroupKey());
+                        }
+                    } else {
+                        Log.d(TAG, "Group List is null or empty");
+                    }
 
                     // 그룹 리스트 업데이트
                     updateGroupList(updatedUserInfo);
-
                     Toast.makeText(getContext(), "그룹 생성 성공", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getContext(), "그룹 생성 실패: " + response.message(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "그룹 생성 실패", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Response unsuccessful or body is null");
                 }
             }
 
             @Override
             public void onFailure(Call<UserInfo> call, Throwable t) {
                 Toast.makeText(getContext(), "그룹 생성 실패: 서버 오류", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "그룹 생성 실패", t);
             }
         });
-
     }
 
+    // 그룹에 참가하는 메서드
+    private void joinGroup(String groupKey) {
+        UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+        if (userInfo.getUserEmail().isEmpty()) {
+            Toast.makeText(getContext(), "로그인 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        JoinGroupRequest request = new JoinGroupRequest(userInfo, groupKey);
+
+        apiService.joinGroup(request).enqueue(new Callback<UserInfo>() {
+            @Override
+            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserInfo updatedUserInfo = response.body();
+                    sharedPreferencesHelper.saveUserInfo(updatedUserInfo);
+
+                    Log.d(TAG, "Email: " + updatedUserInfo.getUserEmail());
+                    Log.d(TAG, "Name: " + updatedUserInfo.getUserName());
+                    Log.d(TAG, "Phone Number: " + updatedUserInfo.getPhoneNumber());
+
+                    ArrayList<GroupInfo> groupList = updatedUserInfo.getGroupList();
+                    if (groupList != null && !groupList.isEmpty()) {
+                        Log.d(TAG, "Group List size: " + groupList.size());
+                        for (GroupInfo group : groupList) {
+                            Log.d(TAG, "Group Name: " + group.getGroupName());
+                            Log.d(TAG, "Group Key: " + group.getGroupKey());
+                        }
+                    } else {
+                        Log.d(TAG, "Group List is null or empty");
+                    }
+
+                    // 그룹 리스트 업데이트
+                    updateGroupList(updatedUserInfo);
+                    Toast.makeText(getContext(), "그룹 참가 성공", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "그룹 참가 실패", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Response unsuccessful or body is null");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserInfo> call, Throwable t) {
+                Toast.makeText(getContext(), "그룹 참가 실패: 서버 오류", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "그룹 참가 실패", t);
+            }
+        });
+    }
+
+    // 그룹 리스트를 업데이트하는 메서드
     private void updateGroupList(UserInfo updatedUserInfo) {
-        // 새로운 그룹 리스트를 GroupAdapter에 전달하여 업데이트
-        groupAdapter.updateGroupList(updatedUserInfo.getGroupKeyList());
+        groupAdapter.updateGroupList(updatedUserInfo.getGroupList());
+    }
+
+    // 그룹 삭제 메서드 추가
+    public void deleteGroup(GroupInfo group) {
+        UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+        if (userInfo.getUserEmail().isEmpty()) {
+            Toast.makeText(getContext(), "로그인 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DeleteGroupRequest request = new DeleteGroupRequest(userInfo, group.getGroupName());
+
+        apiService.deleteGroup(request).enqueue(new Callback<UserInfo>() {
+            @Override
+            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserInfo updatedUserInfo = response.body();
+                    sharedPreferencesHelper.saveUserInfo(updatedUserInfo);
+
+                    Log.d(TAG, "Email: " + updatedUserInfo.getUserEmail());
+                    Log.d(TAG, "Name: " + updatedUserInfo.getUserName());
+                    Log.d(TAG, "Phone Number: " + updatedUserInfo.getPhoneNumber());
+
+                    ArrayList<GroupInfo> groupList = updatedUserInfo.getGroupList();
+                    if (groupList != null && !groupList.isEmpty()) {
+                        Log.d(TAG, "Group List size: " + groupList.size());
+                        for (GroupInfo group : groupList) {
+                            Log.d(TAG, "Group Name: " + group.getGroupName());
+                            Log.d(TAG, "Group Key: " + group.getGroupKey());
+                        }
+                    } else {
+                        Log.d(TAG, "Group List is null or empty");
+                    }
+
+                    // 그룹 리스트 업데이트
+                    updateGroupList(updatedUserInfo);
+                    Toast.makeText(getContext(), "그룹 삭제 성공", Toast.LENGTH_SHORT).show();
+                } else {
+                    // 응답 상태 코드와 응답 본문을 추가로 로그에 기록
+                    Log.d(TAG, "Response unsuccessful. Code: " + response.code() + ", Message: " + response.message());
+                    Toast.makeText(getContext(), "그룹 삭제 실패", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserInfo> call, Throwable t) {
+                Toast.makeText(getContext(), "그룹 삭제 실패: 서버 오류", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "그룹 삭제 실패", t);
+            }
+        });
+    }
+
+    //그룹 멤버 삭제
+    public void deleteGroupMember(GroupInfo group, GroupMember member) {
+        UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+        if (userInfo.getUserEmail().isEmpty()) {
+            Toast.makeText(getContext(), "로그인 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "Email: " + member.getMemberEmail());
+        Log.d(TAG, "Name: " + member.getMemberName());
+
+        DeleteGroupMemberRequest request = new DeleteGroupMemberRequest(userInfo, group.getGroupName(), member.getMemberEmail());
+
+        apiService.deleteGroupMember(request).enqueue(new Callback<UserInfo>() {
+            @Override
+            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserInfo updatedUserInfo = response.body();
+                    sharedPreferencesHelper.saveUserInfo(updatedUserInfo);
+
+                    Log.d(TAG, "Email: " + updatedUserInfo.getUserEmail());
+                    Log.d(TAG, "Name: " + updatedUserInfo.getUserName());
+                    Log.d(TAG, "Phone Number: " + updatedUserInfo.getPhoneNumber());
+
+                    ArrayList<GroupInfo> groupList = updatedUserInfo.getGroupList();
+                    if (groupList != null && !groupList.isEmpty()) {
+                        Log.d(TAG, "Group List size: " + groupList.size());
+                        for (GroupInfo group : groupList) {
+                            Log.d(TAG, "Group Name: " + group.getGroupName());
+                            Log.d(TAG, "Group Key: " + group.getGroupKey());
+                        }
+                    } else {
+                        Log.d(TAG, "Group List is null or empty");
+                    }
+
+                    // 그룹 리스트 업데이트
+                    updateGroupList(updatedUserInfo);
+                    Toast.makeText(getContext(), "멤버 삭제 성공", Toast.LENGTH_SHORT).show();
+                } else {
+                    // 응답 상태 코드와 응답 본문을 추가로 로그에 기록
+                    Log.d(TAG, "Response unsuccessful. Code: " + response.code() + ", Message: " + response.message());
+                    Toast.makeText(getContext(), "멤버 삭제 실패", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserInfo> call, Throwable t) {
+                Toast.makeText(getContext(), "멤버 삭제 실패: 서버 오류", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "멤버 삭제 실패", t);
+            }
+        });
+    }
+
+    // SharedPreferencesHelper 접근자 추가
+    public SharedPreferencesHelper getSharedPreferencesHelper() {
+        return sharedPreferencesHelper;
     }
 }

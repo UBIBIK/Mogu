@@ -1,0 +1,89 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- 그룹 이름을 표시하는 텍스트 뷰 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:clickable="true">
+
+        <TextView
+            android:id="@+id/group_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:background="@drawable/gradient_background"
+            android:textColor="#ffffff"/>
+
+        <Button
+            android:id="@+id/btn_manage_schedule"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="일정관리"
+            android:background="@drawable/banner_background"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- 확장된 그룹 정보를 표시하는 레이아웃 -->
+    <LinearLayout
+        android:id="@+id/expanded_view"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:padding="8dp"
+        android:background="#ffffff">
+
+        <!-- 그룹 멤버 리스트 -->
+        <LinearLayout
+            android:id="@+id/group_members_list"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:textSize="20sp"/>
+
+        <!-- 그룹 삭제 버튼 (그룹장에게만 표시) -->
+        <Button
+            android:id="@+id/btn_delete_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="그룹 삭제"
+            android:visibility="gone"
+            android:background="@drawable/rounded_button_red"
+            android:textColor="@android:color/white"
+            android:padding="4dp"
+            android:layout_margin="8dp"/>
+
+        <!-- 초대코드 복사 버튼 -->
+        <Button
+            android:id="@+id/btn_copy_invite_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="초대코드 복사"
+            android:background="@drawable/rounded_button_blue"
+            android:textColor="#ffffff"
+            android:padding="4dp"
+            android:layout_margin="8dp"/>
+
+        <!-- 닫기 버튼 -->
+        <Button
+            android:id="@+id/btn_close"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="닫기"
+            android:background="@drawable/rounded_button_blue"
+            android:textColor="#ffffff"
+            android:padding="4dp"
+            android:layout_margin="8dp"/>
+    </LinearLayout>
+</LinearLayout>

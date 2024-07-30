@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@android:color/white">
+
 
     <!-- 검색창 -->
     <EditText
@@ -15,6 +17,16 @@
         android:inputType="text"
         android:padding="12dp"
         android:background="@drawable/edit_text_bg" />
+
+    <Button
+        android:id="@+id/btnSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="검색"
+        android:layout_gravity="end"
+        android:background="@drawable/rounded_button_selected"
+        android:textColor="@drawable/button_text_selected"
+        android:layout_marginBottom="8dp"/>
 
     <!-- 카테고리 선택 -->
     <Spinner

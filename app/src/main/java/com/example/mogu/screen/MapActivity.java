@@ -14,14 +14,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.mogu.R;
+import com.example.mogu.screen.PlaceFragment;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.kakao.vectormap.KakaoMap;
 import com.kakao.vectormap.KakaoMapReadyCallback;
 import com.kakao.vectormap.MapLifeCycleCallback;
 import com.kakao.vectormap.MapView;
-import com.kakao.sdk.common.KakaoSdk;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -52,6 +55,9 @@ public class MapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        Intent intent = getIntent();
+        startMillis = intent.getLongExtra("startDate", -1);
+        endMillis = intent.getLongExtra("endDate", -1);
 
         mapView = findViewById(R.id.map_view);
         mapView.start(new MapLifeCycleCallback() {
@@ -75,7 +81,6 @@ public class MapActivity extends AppCompatActivity {
             }
         });
 
-
         CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinatorLayout);
         FrameLayout bottomSheet = findViewById(R.id.bottomSheetContainer);
 
@@ -91,15 +96,12 @@ public class MapActivity extends AppCompatActivity {
         popupSaveButton = findViewById(R.id.popupSaveButton);
         toggleBottomSheetButton = findViewById(R.id.toggleBottomSheetButton);
 
-        // 날짜 버튼들 생성
-        createDayButtons();
-
         // 장소 추가 버튼 클릭 리스너
         addPlaceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (selectedDayButton != null) {
-                    Toast.makeText(MapActivity.this, "장소 추가 버튼 클릭됨", Toast.LENGTH_SHORT).show();
+                    openPlaceFragment();
                 }
             }
         });
@@ -135,6 +137,9 @@ public class MapActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // 날짜 버튼들 생성
+        createDayButtons();
     }
 
     private void createDayButtons() {
@@ -203,8 +208,6 @@ public class MapActivity extends AppCompatActivity {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
-
-
     private void showNotePopup() {
         String day = selectedDayButton.getText().toString();
         String note = dayNotesMap.get(day);
@@ -226,5 +229,14 @@ public class MapActivity extends AppCompatActivity {
     private long getDateDifference(Calendar startDate, Calendar endDate) {
         long diffInMillis = endDate.getTimeInMillis() - startDate.getTimeInMillis();
         return TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
+    }
+
+    private void openPlaceFragment() {
+        Fragment placeFragment = new PlaceFragment();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.mapContainer, placeFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 }

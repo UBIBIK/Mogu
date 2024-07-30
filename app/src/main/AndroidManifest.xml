@@ -21,7 +21,7 @@
 
         <!-- MainActivity 설정 -->
         <activity
-            android:name=".screen.CalendarActivity"
+            android:name=".screen.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

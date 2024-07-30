@@ -36,8 +36,9 @@
 
         <!-- Kakao SDK 초기화를 위한 설정 -->
         <meta-data
-            android:name="com.kakao.sdk.AppKey"
-            android:value="f10c3376258c26cd124dd9604b4ae7fd" />
+            android:name="com.kakao.vectormap.APP_KEY"
+            android:value="fc5b9ce71467857f2b5a0a83b4cc33b4">
+        </meta-data>
 
         <!-- Kakao 로그인 Redirect URI 설정 -->
         <activity

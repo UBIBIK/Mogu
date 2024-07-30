@@ -21,6 +21,7 @@ import com.kakao.vectormap.KakaoMap;
 import com.kakao.vectormap.KakaoMapReadyCallback;
 import com.kakao.vectormap.MapLifeCycleCallback;
 import com.kakao.vectormap.MapView;
+import com.kakao.sdk.common.KakaoSdk;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -51,28 +52,29 @@ public class MapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        // 인텐트로부터 날짜 범위 가져오기
-        Intent intent = getIntent();
-        startMillis = intent.getLongExtra("startDate", 0);
-        endMillis = intent.getLongExtra("endDate", 0);
 
         mapView = findViewById(R.id.map_view);
         mapView.start(new MapLifeCycleCallback() {
             @Override
             public void onMapDestroy() {
+                // 지도 API가 정상적으로 종료될 때 호출
                 Log.d("KakaoMap", "onMapDestroy: ");
             }
 
             @Override
             public void onMapError(Exception error) {
+                // 인증 실패 및 지도 사용 중 에러가 발생할 때 호출
                 Log.e("KakaoMap", "onMapError: ", error);
             }
         }, new KakaoMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull KakaoMap map) {
+                // 정상적으로 인증이 완료되었을 때 호출
+                // KakaoMap 객체를 얻어 옵니다.
                 kakaoMap = map;
             }
         });
+
 
         CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinatorLayout);
         FrameLayout bottomSheet = findViewById(R.id.bottomSheetContainer);

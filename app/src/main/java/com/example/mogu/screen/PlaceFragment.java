@@ -2,10 +2,12 @@ package com.example.mogu.screen;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -27,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class PlaceFragment extends Fragment {
@@ -48,6 +51,8 @@ public class PlaceFragment extends Fragment {
     private Spinner spCategory;
     private int contentTypeId;
 
+    private static final String TAG = "PlaceFragment";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -59,18 +64,25 @@ public class PlaceFragment extends Fragment {
         etSearch = view.findViewById(R.id.etSearch);
         spCategory = view.findViewById(R.id.spinnerCategory);
 
-        // 기본 카테고리 (관광지) 설정
-        contentTypeId = 12;
-        final String initialRequestUrl = buildRequestUrl(contentTypeId);
-        fetchXML(initialRequestUrl, contentTypeId);
+        // 스피너 어댑터 설정
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                getContext(),
+                R.array.category_array,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spCategory.setAdapter(adapter);
+
+        // 기본 카테고리 (전체) 설정
+        contentTypeId = 0; // 전체 카테고리의 ID 설정
+        spCategory.setSelection(0); // '전체'를 기본 선택 항목으로 설정
 
         // 카테고리 변경 시
         spCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 contentTypeId = getContentTypeId(position);
-                final String requestUrl = buildRequestUrl(contentTypeId);
-                fetchXML(requestUrl, contentTypeId);
+                fetchData();
             }
 
             @Override
@@ -81,92 +93,83 @@ public class PlaceFragment extends Fragment {
 
         // 검색 버튼 클릭 시
         Button btnSearch = view.findViewById(R.id.btnSearch);
-        btnSearch.setOnClickListener(v -> {
-            String query = etSearch.getText().toString().trim();
-            if (!query.isEmpty()) {
-                final String requestUrl = buildRequestUrlWithQuery(query, contentTypeId);
-                fetchXML(requestUrl, contentTypeId);
-            }
-        });
+        btnSearch.setOnClickListener(v -> fetchData());
 
         return view;
     }
 
     private String buildRequestUrl(int contentTypeId) {
-        return SERVICE_URL +
-                "?serviceKey=" + SERVICE_KEY +
-                "&pageNo=" + PAGE_NO +
-                "&numOfRows=" + NUM_OF_ROWS +
-                "&MobileApp=" + MOBILE_APP +
-                "&MobileOS=" + MOBILE_OS +
-                "&arrange=" + ARRANGE +
-                "&areaCode=" + AREA_CODE +
-                "&sigunguCode=" + SIGUNGU_CODE+
-                "&contentTypeId=" + contentTypeId +
-                "&listYN=" + LIST_YN;
-    }
+        StringBuilder urlBuilder = new StringBuilder(SERVICE_URL)
+                .append("?serviceKey=").append(SERVICE_KEY)
+                .append("&pageNo=").append(PAGE_NO)
+                .append("&numOfRows=").append(NUM_OF_ROWS)
+                .append("&MobileApp=").append(MOBILE_APP)
+                .append("&MobileOS=").append(MOBILE_OS)
+                .append("&arrange=").append(ARRANGE)
+                .append("&areaCode=").append(AREA_CODE)
+                .append("&sigunguCode=").append(SIGUNGU_CODE)
+                .append("&listYN=").append(LIST_YN);
 
-    private String buildRequestUrlWithQuery(String query, int contentTypeId) {
-        return SERVICE_URL +
-                "?serviceKey=" + SERVICE_KEY +
-                "&pageNo=" + PAGE_NO +
-                "&numOfRows=" + NUM_OF_ROWS +
-                "&MobileApp=" + MOBILE_APP +
-                "&MobileOS=" + MOBILE_OS +
-                "&arrange=" + ARRANGE +
-                "&areaCode=" + AREA_CODE +
-                "&sigunguCode=" + SIGUNGU_CODE+
-                "&contentTypeId=" + contentTypeId +
-                "&listYN=" + LIST_YN +
-                "&keyword=" + query;
+        if (contentTypeId != 0) {
+            urlBuilder.append("&contentTypeId=").append(contentTypeId);
+        }
+
+        return urlBuilder.toString();
     }
 
     private int getContentTypeId(int position) {
         switch (position) {
-            case 0: return 12; // 관광지
-            case 1: return 14; // 문화시설
-            case 2: return 15; // 축제공연행사
-            case 3: return 25; // 여행코스
-            case 4: return 28; // 레포츠
-            case 5: return 32; // 숙박
-            case 6: return 38; // 쇼핑
-            case 7: return 39; // 음식점
-            default: return 12; // 기본값 관광지
+            case 0: return 0; // 전체
+            case 1: return 12; // 관광지
+            case 2: return 14; // 문화시설
+            case 3: return 15; // 축제공연행사
+            case 4: return 25; // 여행코스
+            case 5: return 28; // 레포츠
+            case 6: return 32; // 숙박
+            case 7: return 38; // 쇼핑
+            case 8: return 39; // 음식점
+            default: return 0; // 기본값 전체
         }
     }
 
-    private void fetchXML(String url, int contentTypeId) {
-        class GetPlaceData extends AsyncTask<Void, Void, Void> {
-            private String page;
+    private void fetchData() {
+        String query = etSearch.getText().toString().trim();
+        final String requestUrl = buildRequestUrl(contentTypeId);
+        Log.d(TAG, "Request URL: " + requestUrl);
+        Log.d(TAG, "Search Query: " + query);
+        new FetchPlaceDataTask(requestUrl, query).execute();
+    }
 
-            @Override
-            protected Void doInBackground(Void... voids) {
-                try {
-                    URL apiUrl = new URL(url);
-                    BufferedReader bufReader = new BufferedReader(new InputStreamReader(apiUrl.openStream(), "UTF-8"));
+    private class FetchPlaceDataTask extends AsyncTask<Void, Void, ArrayList<TourApi>> {
+        private String url;
+        private String searchQuery;
 
-                    page = "";
-                    String line;
-                    while ((line = bufReader.readLine()) != null) {
-                        page += line;
-                    }
-                    bufReader.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+        public FetchPlaceDataTask(String url, String searchQuery) {
+            this.url = url;
+            this.searchQuery = searchQuery;
+        }
+
+        @Override
+        protected ArrayList<TourApi> doInBackground(Void... voids) {
+            ArrayList<TourApi> itemList = new ArrayList<>();
+            try {
+                URL apiUrl = new URL(url);
+                BufferedReader bufReader = new BufferedReader(new InputStreamReader(apiUrl.openStream(), "UTF-8"));
+
+                StringBuilder page = new StringBuilder();
+                String line;
+                while ((line = bufReader.readLine()) != null) {
+                    page.append(line);
                 }
-                return null;
-            }
+                bufReader.close();
 
-            @Override
-            protected void onPostExecute(Void result) {
-                super.onPostExecute(result);
-                ArrayList<TourApi> itemList = new ArrayList<>();
+                Log.d(TAG, "API Response: " + page.toString());
 
                 boolean tagImage = false;
                 boolean tagTitle = false;
                 boolean tagAddr1 = false;
                 boolean tagAddr2 = false;
-                boolean tagcontentid = false;
+                boolean tagContentid = false;
 
                 String firstimage = "";
                 String title = "";
@@ -174,61 +177,66 @@ public class PlaceFragment extends Fragment {
                 String addr2 = "";
                 String contentid = "";
 
-                try {
-                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                    factory.setNamespaceAware(true);
-                    XmlPullParser xpp = factory.newPullParser();
-                    xpp.setInput(new StringReader(page));
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                XmlPullParser xpp = factory.newPullParser();
+                xpp.setInput(new StringReader(page.toString()));
 
-                    int eventType = xpp.getEventType();
-                    while (eventType != XmlPullParser.END_DOCUMENT) {
-                        if (eventType == XmlPullParser.START_TAG) {
-                            String tagName = xpp.getName();
-                            if (tagName.equals("firstimage")) tagImage = true;
-                            if (tagName.equals("title")) tagTitle = true;
-                            if (tagName.equals("addr1")) tagAddr1 = true;
-                            if (tagName.equals("addr2")) tagAddr2 = true;
-                            if (tagName.equals("contentid")) tagcontentid = true;
-                        } else if (eventType == XmlPullParser.TEXT) {
-                            if (tagImage) {
-                                firstimage = xpp.getText();
-                                tagImage = false;
-                            }
-                            if (tagTitle) {
-                                title = xpp.getText();
-                                tagTitle = false;
-                            }
-                            if (tagAddr1) {
-                                addr1 = xpp.getText();
-                                tagAddr1 = false;
-                            }
-                            if (tagAddr2) {
-                                addr2 = xpp.getText();
-                                tagAddr2 = false;
-                            }
-                            if (tagcontentid){
-                                contentid = xpp.getText();
-                                tagcontentid = false;
-                            }
-                        } else if (eventType == XmlPullParser.END_TAG) {
-                            if (xpp.getName().equals("item")) {
-                                if (firstimage.contains("http")) {
+                int eventType = xpp.getEventType();
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    if (eventType == XmlPullParser.START_TAG) {
+                        String tagName = xpp.getName();
+                        if (tagName.equals("firstimage")) tagImage = true;
+                        if (tagName.equals("title")) tagTitle = true;
+                        if (tagName.equals("addr1")) tagAddr1 = true;
+                        if (tagName.equals("addr2")) tagAddr2 = true;
+                        if (tagName.equals("contentid")) tagContentid = true;
+                    } else if (eventType == XmlPullParser.TEXT) {
+                        if (tagImage) {
+                            firstimage = xpp.getText();
+                            tagImage = false;
+                        }
+                        if (tagTitle) {
+                            title = xpp.getText();
+                            tagTitle = false;
+                        }
+                        if (tagAddr1) {
+                            addr1 = xpp.getText();
+                            tagAddr1 = false;
+                        }
+                        if (tagAddr2) {
+                            addr2 = xpp.getText();
+                            tagAddr2 = false;
+                        }
+                        if (tagContentid) {
+                            contentid = xpp.getText();
+                            tagContentid = false;
+                        }
+                    } else if (eventType == XmlPullParser.END_TAG) {
+                        if (xpp.getName().equals("item")) {
+                            Log.d(TAG, "Item Title: " + title);
+                            if (firstimage.contains("http")) {
+                                if (searchQuery.isEmpty() || title.equalsIgnoreCase(searchQuery)) {
                                     TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid);
                                     itemList.add(item);
                                 }
                             }
                         }
-                        eventType = xpp.next();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    eventType = xpp.next();
                 }
-
-                tourAdapter = new TourAdapter(itemList);
-                rcPlaceList.setAdapter(tourAdapter);
+            } catch (Exception e) {
+                Log.e(TAG, "Error: ", e);
             }
+            return itemList;
         }
 
-        new GetPlaceData().execute();
+        @Override
+        protected void onPostExecute(ArrayList<TourApi> result) {
+            super.onPostExecute(result);
+            Log.d(TAG, "Result Size: " + result.size());
+            tourAdapter = new TourAdapter(result);
+            rcPlaceList.setAdapter(tourAdapter);
+        }
     }
 }

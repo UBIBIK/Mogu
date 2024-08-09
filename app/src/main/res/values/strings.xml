@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">목포와</string>
     <string-array name="category_array">
+        <item>전체</item>
         <item>관광지</item>
         <item>문화시설</item>
         <item>축제공연행사</item>

@@ -1,12 +1,14 @@
 package com.example.mogu.custom;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.mogu.R;
 import com.example.mogu.object.TourApi;
+import com.example.mogu.screen.MapActivity;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -69,17 +72,23 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.ViewHolder> {
             txtAddr1 = itemView.findViewById(R.id.tvAddr1);
             txtAddr2 = itemView.findViewById(R.id.tvAddr2);
 
-
             imgFirstImage.setOnClickListener(v -> {
                 // 팝업창 띄우기
                 View popupView = LayoutInflater.from(v.getContext()).inflate(R.layout.popup_image, null);
                 ImageView popupImage = popupView.findViewById(R.id.popupImage);
                 TextView popupSummary = popupView.findViewById(R.id.popupSummary);
+                TextView textPlaceName = popupView.findViewById(R.id.textPlaceName);
+                Button btnAddPlace = popupView.findViewById(R.id.btnAddPlace);
 
+                TourApi item = items.get(getAdapterPosition());
                 Glide.with(popupImage.getContext())
-                        .load(items.get(getAdapterPosition()).getFirstimage())
+                        .load(item.getFirstimage())
                         .error(R.drawable.ic_launcher_foreground)
                         .into(popupImage);
+
+                // 장소 이름 설정
+                String placeName = item.getTitle();
+                textPlaceName.setText(placeName);
 
                 AlertDialog dialog = new AlertDialog.Builder(v.getContext())
                         .setView(popupView)
@@ -87,7 +96,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.ViewHolder> {
                         .show();
 
                 // API 호출하여 개요 데이터 가져오기
-                String contentId = items.get(getAdapterPosition()).getContentid();
+                String contentId = item.getContentid();
                 String requestUrl = DETAIL_SERVICE_URL +
                         "?serviceKey=" + SERVICE_KEY +
                         "&contentId=" + contentId +
@@ -96,6 +105,13 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.ViewHolder> {
                         "&overviewYN=" + OVERVIEWYN;
 
                 fetchOverviewData(requestUrl, popupSummary);
+
+                // 장소 추가 버튼 클릭 리스너
+                btnAddPlace.setOnClickListener(v1 -> {
+                    Intent intent = new Intent(v.getContext(), MapActivity.class);
+                    intent.putExtra("PLACE_NAME", placeName);
+                    v.getContext().startActivity(intent);
+                });
             });
         }
 

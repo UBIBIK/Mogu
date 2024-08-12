@@ -146,7 +146,7 @@ public class PlaceFragment extends Fragment {
 
         public FetchPlaceDataTask(String url, String searchQuery) {
             this.url = url;
-            this.searchQuery = searchQuery;
+            this.searchQuery = searchQuery.trim(); // 공백 제거
         }
 
         @Override
@@ -216,10 +216,15 @@ public class PlaceFragment extends Fragment {
                         if (xpp.getName().equals("item")) {
                             Log.d(TAG, "Item Title: " + title);
                             if (firstimage.contains("http")) {
-                                if (searchQuery.isEmpty() || title.equalsIgnoreCase(searchQuery)) {
+                                boolean isMatch = searchQuery.isEmpty() || title.toLowerCase().contains(searchQuery.toLowerCase());
+                                if (isMatch) {
                                     TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid);
                                     itemList.add(item);
+                                    Log.d(TAG, "Included Item: " + title);
+                                } else {
+                                    Log.d(TAG, "Excluded Item: " + title);
                                 }
+                                Log.d(TAG, "Search Query: " + searchQuery);
                             }
                         }
                     }
@@ -234,9 +239,9 @@ public class PlaceFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<TourApi> result) {
             super.onPostExecute(result);
-            Log.d(TAG, "Result Size: " + result.size());
             tourAdapter = new TourAdapter(result);
             rcPlaceList.setAdapter(tourAdapter);
+            Log.d(TAG, "Result List Size: " + result.size());
         }
     }
 }

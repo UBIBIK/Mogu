@@ -16,6 +16,11 @@ public class UserInfo {
 
     public UserInfo() {}
 
+    public UserInfo(String userEmail, String userName) {
+        this.userEmail = userEmail;
+        this.userName = userName;
+    }
+
     public UserInfo(String userEmail, String userName, String password, String phoneNumber) {
         this.userEmail = userEmail;
         this.userName = userName;
@@ -24,16 +29,11 @@ public class UserInfo {
         this.groupList = new ArrayList<>(); // 빈 리스트로 초기화
     }
 
-    public UserInfo(String userEmail, String password, String userName, String phoneNumber, ArrayList<GroupInfo> groupList, ArrayList<TripScheduleInfo> tripScheduleList) {
+    public UserInfo(String userEmail, String password, String userName, String phoneNumber, ArrayList<GroupInfo> groupList) {
         this.userEmail = userEmail;
         this.password = password;
         this.userName = userName;
         this.phoneNumber = phoneNumber;
         this.groupList = groupList;
-    }
-
-    public UserInfo(String userEmail, String userName) {
-        this.userEmail = userEmail;
-        this.userName = userName;
     }
 }

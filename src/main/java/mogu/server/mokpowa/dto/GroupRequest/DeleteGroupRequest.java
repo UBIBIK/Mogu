@@ -1,7 +1,8 @@
-package mogu.server.mokpowa.dto;
+package mogu.server.mokpowa.dto.GroupRequest;
 
 import lombok.Getter;
 import lombok.Setter;
+import mogu.server.mokpowa.dto.UserInfo;
 
 @Getter
 @Setter

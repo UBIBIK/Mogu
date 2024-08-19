@@ -1,8 +1,8 @@
 package mogu.server.mokpowa.RepositoryTest;
 
 import mogu.server.mokpowa.controller.AndroidController;
-import mogu.server.mokpowa.dto.DeleteTripScheduleRequest;
 import mogu.server.mokpowa.dto.LocationInfo;
+import mogu.server.mokpowa.dto.TripScheduleRequest.DeleteTripScheduleRequest;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.entity.TripSchedule;

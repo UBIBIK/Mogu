@@ -13,6 +13,7 @@ public class GroupInfo {
     private String gmEmail;
     private String gmName;
     private ArrayList<GroupMember> groupMember = new ArrayList<>();
+    private ArrayList<TripScheduleInfo> tripScheduleList = new ArrayList<>();
 
     public GroupInfo() {}
 
@@ -22,5 +23,6 @@ public class GroupInfo {
         this.gmEmail = gmEmail;
         this.gmName = gmName;
         this.groupMember = groupMember;
+        this.tripScheduleList = new ArrayList<>(); // 빈 리스트로 초기화
     }
 }

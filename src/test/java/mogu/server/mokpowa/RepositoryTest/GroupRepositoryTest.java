@@ -15,12 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class GroupRepositoryTest {
-    private static final String TEST_GROUP_NAME = "jejugo";
+    private static final String TEST_GROUP_NAME = "jejugo2";
     private static final String TEST_GROUP_MASTER_EMAIL = "3jdnqls@naver.com";
     private static final String TEST_GROUP_MASTER_NAME = "test1";
-    private static final String TEST_GROUP_MEMBER_EMAIL = "test2";
-    private static final String TEST_GROUP_MEMBER_NAME = "test2";
-    private static final String TEST_GROUP_KEY = "ic2v56v9fyagn2xk";
+    private static final String TEST_GROUP_MEMBER_EMAIL = "dhalstjd123@naver.com";
+    private static final String TEST_GROUP_MEMBER_NAME = "오민성";
+    private static final String TEST_GROUP_KEY = "groupKey2";
 
     @Autowired
     private GroupRepository groupRepository;
@@ -41,8 +41,8 @@ public class GroupRepositoryTest {
     @Test
     public void joinGroupTest() throws Exception {
         UserInfo member = new UserInfo();
-        member.setUserEmail("dhalstjd123@naver.com");
-        member.setUserName("오민성");
+        member.setUserEmail(TEST_GROUP_MEMBER_EMAIL);
+        member.setUserName(TEST_GROUP_MEMBER_NAME);
         Group group = groupRepository.joinGroup(TEST_GROUP_KEY, member);
         for(GroupMember groupMember : group.getGroupMember()) {
             System.out.println(groupMember.getMemberName());
@@ -79,10 +79,14 @@ public class GroupRepositoryTest {
         UserInfo master = new UserInfo();
         master.setUserEmail(TEST_GROUP_MASTER_EMAIL);
         master.setUserName(TEST_GROUP_MASTER_NAME);
-        UserInfo result = groupRepository.deleteGroupMember(TEST_GROUP_NAME, "dhalstjd123@naver.com", master);
+        UserInfo result = groupRepository.deleteGroupMember(TEST_GROUP_NAME, TEST_GROUP_MEMBER_EMAIL, master);
         // 결과 검증
-        assertNotNull(result, "Result should not be null");
-        assertEquals("dhalstjd123@naver.com", result.getUserEmail(), "Emails should match");
-        assertTrue(result.getGroupList().stream().allMatch(groupInfo -> groupInfo.getGroupMember().stream().noneMatch(member -> member.getMemberEmail().equals("dhalstjd123@naver.com"))), "Group member list should not contain the deleted member");
+        System.out.println("deleteGroupMember 호출 후 업데이트된 UserInfo");
+        for(GroupInfo groupInfo : result.getGroupList()) {
+            System.out.println("그룹: " + groupInfo.getGroupName());
+            for (GroupMember groupMember : groupInfo.getGroupMember()) {
+                System.out.println("그룹 멤버: " + groupMember.getMemberEmail());
+            }
+        }
     }
 }

@@ -2,8 +2,11 @@ package mogu.server.mokpowa.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import mogu.server.mokpowa.dto.*;
-import mogu.server.mokpowa.entity.*;
+import mogu.server.mokpowa.entity.Group;
+import mogu.server.mokpowa.entity.TripSchedule;
+import mogu.server.mokpowa.entity.User;
 import mogu.server.mokpowa.repository.GroupRepository;
+import mogu.server.mokpowa.repository.TripScheduleRepository;
 import mogu.server.mokpowa.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,10 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import retrofit2.Call;
-import retrofit2.http.Body;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 @Slf4j
@@ -23,11 +23,13 @@ import java.util.Random;
 public class AndroidController {
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
+    private final TripScheduleRepository tripScheduleRepository;
 
     @Autowired
-    public AndroidController(UserRepository userRepository, GroupRepository groupRepository) {
+    public AndroidController(UserRepository userRepository, GroupRepository groupRepository, TripScheduleRepository tripScheduleRepository) {
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
+        this.tripScheduleRepository = tripScheduleRepository;
     }
 
 
@@ -52,27 +54,34 @@ public class AndroidController {
         log.info("입력받은 비밀번호 = {}", loginUser.getPassword());
 
         User finduser = userRepository.getUserDetail(loginUser.getUserEmail());
-        if(finduser.getPassword().equals(loginUser.getPassword())) {
+        if (finduser.getPassword().equals(loginUser.getPassword())) {
             loginUser.setUserName(finduser.getUserName());
             loginUser.setPhoneNumber(finduser.getPhoneNumber());
             loginUser.setGroupList(groupRepository.getJoinGroup(finduser));
             log.info("사용자 로그인 성공 이름 : {}", loginUser.getUserName());
             log.info("전화번호 : {}", loginUser.getPhoneNumber());
+
             if (loginUser.getGroupList() != null) {
                 log.info("Group List size: " + loginUser.getGroupList().size());
                 for (GroupInfo groupInfo : loginUser.getGroupList()) {
                     log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
+
+                    // 각 그룹별로 TripSchedule 추가
+                    TripSchedule tripSchedule = tripScheduleRepository.getTripScheduleDetails(groupInfo.getGroupKey());
+                    groupInfo.getTripScheduleList().add(tripSchedule); // 그룹에 TripSchedule 리스트 추가
+
+                    log.info("존재하는 여행 일정 정보 : {}", groupInfo.getTripScheduleList().getFirst().getTripScheduleName()); // 해당 여행 일정 이름 출력
                 }
             } else {
                 log.info("Group List is null");
             }
 
             return ResponseEntity.ok(loginUser); // 로그인 성공
-        }
-        else {
+        } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 잘못된 사용자 정보를 입력했을 경우 로그인 실패
         }
     }
+
 
     // 그룹 생성
     @PostMapping("/group-create")
@@ -161,6 +170,38 @@ public class AndroidController {
         return ResponseEntity.ok(updatedUserInfo);
     }
 
+    // 여행 일정 생성
+    @PostMapping("/api/TripScheduleCreate")
+    public ResponseEntity<UserInfo> tripCreate(@RequestBody CreateTripScheduleRequest request) throws Exception {
+        User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 사용자 정보가 올바르지 않습니다.
+        }
+
+        TripSchedule insertTrip = tripScheduleRepository.insertTripSchedule((TripSchedule) request.getTripScheduleInfo(), request.getUserInfo());
+        // 생성된 trip을 userInfo에 업데이트하여 반환
+        request.getUserInfo().getGroupList().getFirst().getTripScheduleList().add(insertTrip);
+        return ResponseEntity.ok(request.getUserInfo());
+    }
+
+    @PostMapping("/api/TripScheduleDelete")
+    public ResponseEntity<UserInfo> tripDelete(@RequestBody DeleteTripScheduleRequest request) throws Exception {
+        User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 사용자 정보가 올바르지 않습니다.
+        }
+        // 해당 여행 일정을 삭제한 userInfo에 업데이트하여 반환
+        UserInfo updateUser = tripScheduleRepository.deleteTripSchedule(request.getTripScheduleName(), request.getGroupKey(), request.getUserInfo());
+
+        for (GroupInfo group : updateUser.getGroupList()) {
+            System.out.println("Group: " + group.getGroupName());
+            for (TripScheduleInfo tripSchedule : group.getTripScheduleList()) {
+                log.info("tripDelete 후 업데이트된 UserInfo의 TripScheduleName: {}", tripSchedule.getTripScheduleName());
+            }
+        }
+
+        return ResponseEntity.ok(updateUser);
+    }
 
     // 난수 생성 함수
     public String randomNumber() {

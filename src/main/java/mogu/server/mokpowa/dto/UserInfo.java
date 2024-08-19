@@ -2,6 +2,7 @@ package mogu.server.mokpowa.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import java.util.ArrayList;
 
 @Getter
@@ -23,11 +24,16 @@ public class UserInfo {
         this.groupList = new ArrayList<>(); // 빈 리스트로 초기화
     }
 
-    public UserInfo(String userEmail, String password, String userName, String phoneNumber, ArrayList<GroupInfo> groupInfo) {
+    public UserInfo(String userEmail, String password, String userName, String phoneNumber, ArrayList<GroupInfo> groupList, ArrayList<TripScheduleInfo> tripScheduleList) {
         this.userEmail = userEmail;
         this.password = password;
         this.userName = userName;
         this.phoneNumber = phoneNumber;
-        this.groupList = groupInfo;
+        this.groupList = groupList;
+    }
+
+    public UserInfo(String userEmail, String userName) {
+        this.userEmail = userEmail;
+        this.userName = userName;
     }
 }

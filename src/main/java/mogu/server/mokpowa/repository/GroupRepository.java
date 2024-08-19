@@ -14,7 +14,7 @@ public interface GroupRepository {
     
     boolean groupExists(String groupKey); // 그룹 존재 여부 확인
 
-    ArrayList<GroupInfo> getJoinGroup(User user) throws Exception; // 사용자 가입 그룹 조회
+    ArrayList<GroupInfo> getJoinGroup(User user) throws Exception; // 사용자 가입 그룹 z조회
 
     Group joinGroup(String groupKey, UserInfo user) throws Exception; // 그룹 참가
 

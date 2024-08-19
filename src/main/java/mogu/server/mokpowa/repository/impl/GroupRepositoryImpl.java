@@ -161,7 +161,7 @@ public class GroupRepositoryImpl implements GroupRepository {
             throw new Exception("해당 그룹이 존재하지 않습니다.");
         }
 
-        DocumentSnapshot document = querySnapshot.get().getDocuments().get(0);
+        DocumentSnapshot document = querySnapshot.get().getDocuments().getFirst();
         if (document.exists()) {
             String groupKey = (String) document.get("groupKey");
 
@@ -181,14 +181,8 @@ public class GroupRepositoryImpl implements GroupRepository {
             // 그룹 삭제
             document.getReference().delete();
 
-            // userIn업데이트
-            Iterator<GroupInfo> groupIterator = user.getGroupList().iterator();
-            while (groupIterator.hasNext()) {
-                GroupInfo groupInfo = groupIterator.next();
-                if (groupInfo.getGroupKey().equals(groupKey)) {
-                    groupIterator.remove();
-                }
-            }
+            // userInfo 업데이트
+            user.getGroupList().removeIf(groupInfo -> groupInfo.getGroupKey().equals(groupKey));
 
             return user;
         }
@@ -206,8 +200,11 @@ public class GroupRepositoryImpl implements GroupRepository {
 
         // 그룹이 존재하는지 확인
         ApiFuture<QuerySnapshot> groupQuerySnapshot = firestore.collection(COLLECTION_NAME).whereEqualTo("groupName", deleteGroupName).get();
-        if (groupQuerySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("해당 그룹은 존재하지 않습니다.");
+        List<QueryDocumentSnapshot> userDocuments = userQuerySnapshot.get().getDocuments();
+        if (userDocuments.isEmpty()) {
+            throw new Exception("해당 유저는 존재하지 않습니다.");
+        } else {
+            System.out.println("User found: " + userDocuments.getFirst().getData());
         }
 
         DocumentSnapshot document = groupQuerySnapshot.get().getDocuments().getFirst();

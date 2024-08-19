@@ -31,9 +31,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.mogu.R;
+import com.example.mogu.share.SharedPreferencesHelper;
 import com.example.mogu.screen.PlaceFragment;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -44,7 +44,6 @@ import com.google.android.gms.location.Priority;
 import com.kakao.vectormap.KakaoMap;
 import com.kakao.vectormap.KakaoMapReadyCallback;
 import com.kakao.vectormap.LatLng;
-import com.kakao.vectormap.MapLifeCycleCallback;
 import com.kakao.vectormap.MapView;
 import com.kakao.vectormap.label.Label;
 import com.kakao.vectormap.label.LabelLayer;
@@ -52,7 +51,7 @@ import com.kakao.vectormap.label.LabelOptions;
 import com.kakao.vectormap.label.LabelStyle;
 import com.kakao.vectormap.label.TrackingManager;
 
-
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,7 +71,6 @@ public class MapActivity extends AppCompatActivity {
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
 
-
     private MapView mapView;
     private KakaoMap kakaoMap;
     private BottomSheetBehavior<FrameLayout> bottomSheetBehavior;
@@ -87,6 +85,7 @@ public class MapActivity extends AppCompatActivity {
     private Button toggleBottomSheetButton;
 
     private Map<String, String> dayNotesMap = new HashMap<>();
+    private Map<String, String> placesMap = new HashMap<>();
     private long startMillis;
     private long endMillis;
 
@@ -122,10 +121,10 @@ public class MapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        Intent intent = getIntent();
-        startMillis = intent.getLongExtra("startDate", -1);
-        endMillis = intent.getLongExtra("endDate", -1);
-
+        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        SharedPreferencesHelper.DatePeriodData datePeriodData = sharedPreferencesHelper.getDates();
+        startMillis = datePeriodData.getStartDateMillis();
+        endMillis = datePeriodData.getEndDateMillis();
 
         mapView = findViewById(R.id.map_view);
         progressBar = findViewById(R.id.progressBar);
@@ -148,7 +147,6 @@ public class MapActivity extends AppCompatActivity {
 
         // 하단 시트 초기화
         initializeBottomSheet();
-
     }
 
     @Override
@@ -167,7 +165,7 @@ public class MapActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void getStartLocation() {
-        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY,null)
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
                         startPosition = LatLng.from(location.getLatitude(), location.getLongitude());
@@ -181,7 +179,6 @@ public class MapActivity extends AppCompatActivity {
         requestingLocationUpdates = true;
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -198,27 +195,19 @@ public class MapActivity extends AppCompatActivity {
     private void showPermissionDeniedDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("위치 권한 거부시 앱을 사용할 수 없습니다.")
-                .setPositiveButton("권한 설정하러 가기", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        try {
-                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:" + getPackageName()));
-                            startActivity(intent);
-                        } catch (ActivityNotFoundException e) {
-                            e.printStackTrace();
-                            Intent intent = new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
-                            startActivity(intent);
-                        } finally {
-                            finish();
-                        }
-                    }
-                })
-                .setNegativeButton("앱 종료하기", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                .setPositiveButton("권한 설정하러 가기", (dialogInterface, i) -> {
+                    try {
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:" + getPackageName()));
+                        startActivity(intent);
+                    } catch (ActivityNotFoundException e) {
+                        e.printStackTrace();
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
+                        startActivity(intent);
+                    } finally {
                         finish();
                     }
                 })
+                .setNegativeButton("앱 종료하기", (dialogInterface, i) -> finish())
                 .setCancelable(false)
                 .show();
     }
@@ -228,7 +217,7 @@ public class MapActivity extends AppCompatActivity {
         FrameLayout bottomSheet = findViewById(R.id.bottomSheetContainer);
 
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED); // 기본 상태 설정
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
         dateInfoLayout = findViewById(R.id.dateInfoLayout);
         addPlaceButton = findViewById(R.id.addPlaceButton);
@@ -239,56 +228,46 @@ public class MapActivity extends AppCompatActivity {
         popupSaveButton = findViewById(R.id.popupSaveButton);
         toggleBottomSheetButton = findViewById(R.id.toggleBottomSheetButton);
 
-
         textAddedPlaceName = findViewById(R.id.textAddedPlaceName);
 
         // 인텐트에서 장소 이름 가져오기
         Intent intent = getIntent();
         String placeName = intent.getStringExtra("PLACE_NAME");
-        // 장소 이름을 텍스트뷰에 설정
         if (placeName != null) {
             textAddedPlaceName.setText(placeName);
         }
+
+        // SharedPreferences에서 메모와 장소 불러오기
+        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        dayNotesMap = sharedPreferencesHelper.getAllNotes();
+        placesMap = sharedPreferencesHelper.getAllPlaces();
+
         // 장소 추가 버튼 클릭 리스너
-        addPlaceButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (selectedDayButton != null) {
-                    toggleBottomSheetButton.setVisibility(View.GONE);
-                    openPlaceFragment();
-                }
+        addPlaceButton.setOnClickListener(view -> {
+            if (selectedDayButton != null) {
+                toggleBottomSheetButton.setVisibility(View.GONE);
+                openPlaceFragment();
             }
         });
 
         // 메모 추가 버튼 클릭 리스너
-        addNoteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (selectedDayButton != null) {
-                    showNotePopup();
-                }
+        addNoteButton.setOnClickListener(view -> {
+            if (selectedDayButton != null) {
+                showNotePopup();
             }
         });
 
         // 메모 팝업 창의 저장 버튼 클릭 리스너
-        popupSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                saveNote();
-            }
-        });
+        popupSaveButton.setOnClickListener(view -> saveNote());
 
         // 하단 시트 열기/닫기 버튼 클릭 리스너
-        toggleBottomSheetButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    toggleBottomSheetButton.setText("하단 시트 닫기");
-                } else {
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                    toggleBottomSheetButton.setText("하단 시트 열기");
-                }
+        toggleBottomSheetButton.setOnClickListener(v -> {
+            if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                toggleBottomSheetButton.setText("하단 시트 닫기");
+            } else {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                toggleBottomSheetButton.setText("하단 시트 열기");
             }
         });
 
@@ -303,7 +282,7 @@ public class MapActivity extends AppCompatActivity {
         Calendar endDate = Calendar.getInstance();
         endDate.setTimeInMillis(endMillis);
 
-        long numberOfDays = getDateDifference(startDate, endDate) + 1; // +1 추가
+        long numberOfDays = getDateDifference(startDate, endDate) + 1;
 
         dateInfoLayout.removeAllViews(); // 기존 버튼 삭제
 
@@ -322,12 +301,7 @@ public class MapActivity extends AppCompatActivity {
             params.setMargins(24, 0, 24, 0);
             dayButton.setLayoutParams(params);
 
-            dayButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    selectDayButton(dayButton);
-                }
-            });
+            dayButton.setOnClickListener(view -> selectDayButton(dayButton));
 
             dateInfoLayout.addView(dayButton);
         }
@@ -375,6 +349,11 @@ public class MapActivity extends AppCompatActivity {
         dayNotesMap.put(day, note);
         noteTextView.setText(note);
         notePopupLayout.setVisibility(View.GONE);
+
+        // 메모를 SharedPreferences에 저장
+        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        sharedPreferencesHelper.saveNotes(dayNotesMap);
+
         // 하단 시트 상태 유지
         bottomSheetBehavior.setState(bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED
                 ? BottomSheetBehavior.STATE_EXPANDED : BottomSheetBehavior.STATE_COLLAPSED);
@@ -387,12 +366,24 @@ public class MapActivity extends AppCompatActivity {
 
     private void openPlaceFragment() {
         Fragment placeFragment = new PlaceFragment();
+        Bundle bundle = new Bundle();
+        bundle.putStringArrayList("places_list", new ArrayList<>(placesMap.values())); // 장소 이름 리스트로 변경
+        placeFragment.setArguments(bundle);
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.mapContainer, placeFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
-}
 
+    // 장소를 저장하는 메소드
+    public void savePlace(String placeName) {
+        placesMap.put(placeName, placeName); // 장소 이름만 저장
+
+        // SharedPreferences에 장소 저장
+        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        sharedPreferencesHelper.savePlaces(placesMap);
+    }
+}
 

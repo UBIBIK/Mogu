@@ -7,22 +7,23 @@ public class TourApi {
     private String addr2;
     private String contentid;
 
-    public TourApi(String firstimage, String title,String addr1, String addr2, String contentid) {
+    public TourApi(String firstimage, String title, String addr1, String addr2, String contentid) {
         this.firstimage = firstimage;
-        this.title= title;
+        this.title = title;
         this.addr1 = addr1;
         this.addr2 = addr2;
         this.contentid = contentid;
-
     }
 
+    // Getter methods
     public String getFirstimage() {
         return firstimage;
     }
 
-    public String getTitle(){
+    public String getTitle() {
         return title;
     }
+
     public String getAddr1() {
         return addr1;
     }
@@ -30,7 +31,8 @@ public class TourApi {
     public String getAddr2() {
         return addr2;
     }
-    public String getContentid(){
+
+    public String getContentid() {
         return contentid;
     }
 }

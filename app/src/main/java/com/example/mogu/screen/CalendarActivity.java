@@ -11,6 +11,7 @@ import android.widget.CalendarView;
 import android.widget.TextView;
 
 import com.example.mogu.R;
+import com.example.mogu.share.SharedPreferencesHelper;
 
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -22,11 +23,15 @@ public class CalendarActivity extends AppCompatActivity {
     public TextView selectedDatesLabel, selectedDates, durationText;
     private Calendar firstSelectedDate = null;
     private Calendar secondSelectedDate = null;
+    private SharedPreferencesHelper sharedPreferencesHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calendar);
+
+        // SharedPreferencesHelper 초기화
+        sharedPreferencesHelper = new SharedPreferencesHelper(this);
 
         calendarView1 = findViewById(R.id.calendarView1);
         calendarView2 = findViewById(R.id.calendarView2);
@@ -47,12 +52,26 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView1.setMinDate(todayMillis); // 오늘 날짜 이후만 선택 가능
         calendarView2.setMinDate(todayMillis); // 오늘 날짜 이후만 선택 가능
 
-        // 기본적으로 오늘 날짜를 선택하도록 설정
-        calendarView1.setDate(todayMillis);
-        calendarView2.setDate(todayMillis);
+        // 이전에 저장된 날짜가 있는지 확인하고 불러오기
+        SharedPreferencesHelper.DatePeriodData datePeriodData = sharedPreferencesHelper.getDates();
+        if (datePeriodData.getStartDateMillis() != -1 && datePeriodData.getEndDateMillis() != -1) {
+            firstSelectedDate = Calendar.getInstance();
+            firstSelectedDate.setTimeInMillis(datePeriodData.getStartDateMillis());
+            calendarView1.setDate(datePeriodData.getStartDateMillis());
 
-        firstSelectedDate = (Calendar) today.clone();
-        secondSelectedDate = (Calendar) today.clone();
+            secondSelectedDate = Calendar.getInstance();
+            secondSelectedDate.setTimeInMillis(datePeriodData.getEndDateMillis());
+            calendarView2.setDate(datePeriodData.getEndDateMillis());
+
+            updateSelectedDatesDisplay();
+        } else {
+            // 기본적으로 오늘 날짜를 선택하도록 설정
+            calendarView1.setDate(todayMillis);
+            calendarView2.setDate(todayMillis);
+
+            firstSelectedDate = (Calendar) today.clone();
+            secondSelectedDate = (Calendar) today.clone();
+        }
 
         calendarView1.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -86,6 +105,9 @@ public class CalendarActivity extends AppCompatActivity {
                 if (firstSelectedDate != null && secondSelectedDate != null) {
                     long startMillis = firstSelectedDate.getTimeInMillis();
                     long endMillis = secondSelectedDate.getTimeInMillis();
+
+                    // 선택한 날짜를 SharedPreferences에 저장
+                    sharedPreferencesHelper.saveDates(startMillis, endMillis);
 
                     Intent intent = new Intent(CalendarActivity.this, MapActivity.class);
                     intent.putExtra("startDate", startMillis);

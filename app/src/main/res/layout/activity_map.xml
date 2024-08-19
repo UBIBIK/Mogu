@@ -75,13 +75,13 @@
                     android:gravity="center_vertical"
                     android:layout_marginBottom="16dp">
 
+
                     <!-- 장소 이름을 표시할 TextView -->
                     <TextView
                         android:id="@+id/textAddedPlaceName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="16sp"
-                        android:layout_marginEnd="8dp"
                         android:text="장소 이름"/>
 
                     <!-- 장소 추가 버튼 -->
@@ -97,6 +97,7 @@
                         android:textAllCaps="true"
                         android:layout_gravity="start" />
 
+
                 </LinearLayout>
 
                 <!-- 메모 추가 버튼과 텍스트뷰를 수평으로 배치하는 LinearLayout -->
@@ -107,6 +108,14 @@
                     android:layout_marginTop="8dp"
                     android:gravity="start">
 
+                    <!-- 저장된 메모를 표시할 텍스트뷰 -->
+                    <TextView
+                        android:id="@+id/noteTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:gravity="start"/>
+
                     <!-- 메모 추가 버튼 -->
                     <Button
                         android:id="@+id/addNoteButton"
@@ -116,17 +125,10 @@
                         android:background="@drawable/rounded_button_selected"
                         android:textColor="@drawable/button_text_selected"
                         android:padding="12dp"
+                        android:layout_gravity="right"
                         android:textSize="14sp"
                         android:textAllCaps="true" />
 
-                    <!-- 저장된 메모를 표시할 텍스트뷰 -->
-                    <TextView
-                        android:id="@+id/noteTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text=""
-                        android:gravity="start"/>
                 </LinearLayout>
 
                 <!-- 저장 버튼 -->

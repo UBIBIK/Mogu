@@ -66,7 +66,7 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
         if (!documents.isEmpty()) {
             return documents.getFirst().toObject(TripSchedule.class);
         } else {
-            throw new Exception("해당하는 여행 일정이 존재하지 않습니다.");
+            return null; // 해당하는 여행 일정이 존재하지 않을 경우 null 반환
         }
     }
 

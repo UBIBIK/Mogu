@@ -9,8 +9,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LocationInfo {
     private String locationName; // 장소 이름
-    private Double latitude; // 장소 위도
-    private Double longitude; // 장소 경도
+    private Double latitude; // 장소 위도 추후 수정 가능
+    private Double longitude; // 장소 경도 추후 수정 가능
 
     public LocationInfo() {}
 }

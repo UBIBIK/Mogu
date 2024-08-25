@@ -77,9 +77,10 @@ public class AndroidController {
 
                     // 각 그룹별로 TripSchedule 추가
                     TripSchedule tripSchedule = tripScheduleRepository.getTripScheduleDetails(groupInfo.getGroupKey());
-                    groupInfo.getTripScheduleList().add(tripSchedule); // 그룹에 TripSchedule 리스트 추가
-
-                    log.info("존재하는 여행 일정 정보 : {}", groupInfo.getTripScheduleList().getFirst().getTripScheduleName()); // 해당 여행 일정 이름 출력
+                    if (tripSchedule != null) {
+                        groupInfo.getTripScheduleList().add(tripSchedule); // 그룹에 TripSchedule 리스트 추가
+                        log.info("존재하는 여행 일정 정보 : {}", groupInfo.getTripScheduleList().getFirst().getTripScheduleName()); // 해당 여행 일정 이름 출력
+                    }
                 }
             } else {
                 log.info("Group List is null");
@@ -193,6 +194,7 @@ public class AndroidController {
         return ResponseEntity.ok(request.getUserInfo());
     }
 
+    // 여행 일정 삭제
     @PostMapping("/api/TripScheduleDelete")
     public ResponseEntity<UserInfo> tripDelete(@RequestBody DeleteTripScheduleRequest request) throws Exception {
         User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());

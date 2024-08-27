@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerTest {
     private static final String TEST_GROUP_KEY = "6x6njlutur41ovcv";
     private static final String TEST_GROUP_KEY2 = "4x15torzialiynot";
-    private static final String TEST_TRIP_SCHEDULE_NAME = "제주 여행";
+    private static final String TEST_TRIP_SCHEDULE_NAME = "목포 여행";
     private static final String TEST_GROUP_MASTER_NAME = "qwe";
     private static final String TEST_GROUP_MEMBER_EMAIL = "1qwe@123";
     private static final String TEST_GROUP_MEMBER_PASSWORD = "123";
@@ -68,17 +68,16 @@ public class UserControllerTest {
         // 테스트 여행 일정 생성
         TripSchedule tripSchedule =
                 new TripSchedule(TEST_GROUP_KEY, TEST_TRIP_SCHEDULE_NAME,
-                        "목포 여행 설명",
                         LocalDate.of(2024,8,7),
                         LocalDate.of(2024,8,8));
-        tripSchedule.getTripScheduleDetails().getFirst().getLocations().addFirst(
-                new LocationInfo("목포해상케이블카", 34.79841, 126.3693527)
+        tripSchedule.getTripScheduleDetails().getFirst().getLocationInfo().addFirst(
+                new LocationInfo("갓바위 문화타운", "전라남도 목포시 남농로 135", 34.79841, 126.3693527, "첫번째 일정")
         );
-        tripSchedule.getTripScheduleDetails().getFirst().getLocations().addFirst(
-                new LocationInfo("목포 호텔 드메르", 34.7971005, 126.4265178)
+        tripSchedule.getTripScheduleDetails().getFirst().getLocationInfo().add(1,
+                new LocationInfo("목포 올레", "전라남도 목포시 열린길 18", 34.7927524, 126.3760479, "두번째 일정")
         );
-        tripSchedule.getTripScheduleDetails().getLast().getLocations().addFirst(
-                new LocationInfo("고하도 전망대", 34.7779928, 126.3591099)
+        tripSchedule.getTripScheduleDetails().getLast().getLocationInfo().addFirst(
+                new LocationInfo("고하도 전망대", "전라남도 목포시 고하도안길 234", 34.7779928, 126.3591099, "세번째 일정")
         );
 
         CreateTripScheduleRequest request = new CreateTripScheduleRequest(userInfo, tripSchedule);

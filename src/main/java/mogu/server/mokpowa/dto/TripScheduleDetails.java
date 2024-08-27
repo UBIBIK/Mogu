@@ -12,8 +12,7 @@ import java.util.ArrayList;
 public class TripScheduleDetails {
     private String date; // 날짜
     private String day; // x일차(1일차, 2일차...)
-    private ArrayList<LocationInfo> locations = new ArrayList<>(); // 장소 정보
-    private String note; // 설명
+    private ArrayList<LocationInfo> locationInfo = new ArrayList<>(); // 장소 정보
 
     public TripScheduleDetails() {}
 

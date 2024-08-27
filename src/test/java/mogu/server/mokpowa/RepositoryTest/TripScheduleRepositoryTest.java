@@ -2,6 +2,7 @@ package mogu.server.mokpowa.RepositoryTest;
 
 import mogu.server.mokpowa.controller.AndroidController;
 import mogu.server.mokpowa.dto.LocationInfo;
+import mogu.server.mokpowa.dto.TripScheduleInfo;
 import mogu.server.mokpowa.dto.TripScheduleRequest.DeleteTripScheduleRequest;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.Group;
@@ -34,19 +35,18 @@ public class TripScheduleRepositoryTest {
     @Test
     public void insertTripScheduleTest() throws Exception {
         // 테스트 여행 일정 생성
-        TripSchedule tripSchedule =
+        TripScheduleInfo tripScheduleInfo =
                 new TripSchedule(TEST_GROUP_KEY, TEST_TRIP_SCHEDULE_NAME,
-                        "목포 여행 설명",
                         LocalDate.of(2024,8,7),
                         LocalDate.of(2024,8,8));
-        tripSchedule.getTripScheduleDetails().getFirst().getLocations().addFirst(
-                new LocationInfo("목포해상케이블카", 34.79841, 126.3693527)
+        tripScheduleInfo.getTripScheduleDetails().getFirst().getLocationInfo().addFirst(
+                new LocationInfo("갓바위 문화타운", "전라남도 목포시 남농로 135", 34.79841, 126.3693527, "첫번째 일정")
         );
-        tripSchedule.getTripScheduleDetails().getFirst().getLocations().add(1,
-                new LocationInfo("목포 호텔 드메르", 34.7971005, 126.4265178)
+        tripScheduleInfo.getTripScheduleDetails().getFirst().getLocationInfo().add(1,
+                new LocationInfo("목포 올레", "전라남도 목포시 열린길 18", 34.7927524, 126.3760479, "두번째 일정")
         );
-        tripSchedule.getTripScheduleDetails().getLast().getLocations().addFirst(
-                new LocationInfo("고하도 전망대", 34.7779928, 126.3591099)
+        tripScheduleInfo.getTripScheduleDetails().getLast().getLocationInfo().addFirst(
+                new LocationInfo("고하도 전망대", "전라남도 목포시 고하도안길 234", 34.7779928, 126.3591099, "세번째 일정")
         );
 
         UserInfo member = new UserInfo();
@@ -55,20 +55,20 @@ public class TripScheduleRepositoryTest {
         Group group = new Group(TEST_TRIP_SCHEDULE_NAME, TEST_GROUP_KEY, member.getUserEmail(), member.getUserName());
         member.getGroupList().add(group);
 
-        tripScheduleRepository.insertTripSchedule(tripSchedule, member);
+        tripScheduleRepository.insertTripSchedule((TripSchedule) tripScheduleInfo, member);
     }
 
     @Test
     public void getTripScheduleDetailTest() throws Exception {
         TripSchedule tripSchedule = tripScheduleRepository.getTripScheduleDetails(TEST_GROUP_KEY);
-        System.out.println(tripSchedule.getDescription());
+        System.out.println(tripSchedule.getTripScheduleDetails().getFirst().getLocationInfo().getFirst().getLocationName());
     }
 
     @Test
     public void updateTripScheduleTest() throws Exception {
         TripSchedule updateTrip =
                 tripScheduleRepository.getTripScheduleDetails(TEST_GROUP_KEY);
-        updateTrip.getTripScheduleDetails().getFirst().getLocations().getFirst().
+        updateTrip.getTripScheduleDetails().getFirst().getLocationInfo().getFirst().
                 setLocationName("제주도해녀라면");
         tripScheduleRepository.updateTripSchedule(updateTrip);
     }

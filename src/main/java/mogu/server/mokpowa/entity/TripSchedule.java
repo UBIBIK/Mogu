@@ -14,17 +14,15 @@ import java.util.ArrayList;
 public class TripSchedule extends TripScheduleInfo {
     private String groupKey;
     private String tripScheduleName;
-    private String description;
     private ArrayList<TripScheduleDetails> tripScheduleDetails;
     private String startDate; // LocalDate를 String으로 저장
     private String endDate; // LocalDate를 String으로 저장
 
     public TripSchedule() {}
 
-    public TripSchedule(String groupKey, String tripScheduleName, String description, LocalDate startDate, LocalDate endDate) {
+    public TripSchedule(String groupKey, String tripScheduleName, LocalDate startDate, LocalDate endDate) {
         this.groupKey = groupKey;
         this.tripScheduleName = tripScheduleName;
-        this.description = description;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         this.startDate = startDate.format(formatter);
         this.endDate = endDate.format(formatter);

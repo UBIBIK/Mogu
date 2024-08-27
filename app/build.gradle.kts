@@ -34,7 +34,6 @@ android {
 dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("com.kakao.maps.open:android:2.6.0")
-    implementation("com.kakao.sdk:kakaomap:2.6.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     // UI 관련 라이브러리
     implementation("me.relex:circleindicator:2.1.6") // Circle Indicator

@@ -3,6 +3,7 @@ package com.example.mogu.custom;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mogu.R;
 import com.example.mogu.object.GroupInfo;
 import com.example.mogu.object.GroupMember;
+import com.example.mogu.screen.CalendarActivity;
 import com.example.mogu.screen.GroupFragment;
 import com.example.mogu.object.UserInfo;
 
@@ -27,11 +29,6 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
     private List<GroupInfo> groupList = new ArrayList<>();
     private GroupFragment fragment; // GroupFragment 참조 추가
-
-    private boolean isGroupLeader(GroupInfo group) {
-        UserInfo userInfo = fragment.getSharedPreferencesHelper().getUserInfo();
-        return userInfo.getUserEmail().equals(group.getGmEmail());
-    }
 
     public GroupAdapter(GroupFragment fragment) {
         this.fragment = fragment;
@@ -134,8 +131,10 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
             if (isGroupExpanded) {
                 btnManageSchedule.setVisibility(View.VISIBLE);
                 btnManageSchedule.setOnClickListener(v -> {
-                    // 일정관리 화면으로 이동하는 로직 추가
-                    // TODO: fragment.manageSchedule(group);
+                    // 일정관리 화면으로 이동
+                    Intent intent = new Intent(fragment.getContext(), CalendarActivity.class);
+                    intent.putExtra("group_key", group.getGroupKey());
+                    fragment.startActivity(intent);
                 });
             } else {
                 btnManageSchedule.setVisibility(View.GONE);
@@ -158,6 +157,11 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
                     .setPositiveButton("삭제", (dialog, which) -> fragment.deleteGroup(group))
                     .setNegativeButton("취소", null)
                     .show();
+        }
+
+        private boolean isGroupLeader(GroupInfo group) {
+            UserInfo userInfo = fragment.getSharedPreferencesHelper().getUserInfo();
+            return userInfo.getUserEmail().equals(group.getGmEmail());
         }
     }
 }

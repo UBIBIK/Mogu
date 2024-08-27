@@ -56,6 +56,10 @@
             </intent-filter>
         </activity>
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDysXlwPRC7TpH5_UW_-98S_5rnJmfdVAw"/>
+
         <!-- WebSocketService 등록 -->
         <service android:name=".websocket.WebSocketService"
             android:exported="false" />

@@ -41,14 +41,12 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
-import com.kakao.vectormap.KakaoMap;
-import com.kakao.vectormap.KakaoMapReadyCallback;
-import com.kakao.vectormap.LatLng;
-import com.kakao.vectormap.MapView;
-import com.kakao.vectormap.label.Label;
-import com.kakao.vectormap.label.LabelLayer;
-import com.kakao.vectormap.label.LabelOptions;
-import com.kakao.vectormap.label.LabelStyle;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -57,7 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class MapActivity extends AppCompatActivity {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     // 위치 권한 요청 코드
     private final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
@@ -65,12 +63,10 @@ public class MapActivity extends AppCompatActivity {
     private final String[] locationPermissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
     // 위치 서비스 제공자
     private FusedLocationProviderClient fusedLocationClient;
-    // 초기 위치
-    private LatLng startPosition = null;
+    // 초기 위치 (목포)
+    private LatLng startPosition = new LatLng(34.8118, 126.3922);
     // 진행 상태 표시바
     private ProgressBar progressBar;
-    // 지도 중앙의 레이블
-    private Label centerLabel;
     // 위치 업데이트 플래그
     private boolean requestingLocationUpdates = false;
     // 위치 요청 객체
@@ -78,9 +74,9 @@ public class MapActivity extends AppCompatActivity {
     // 위치 콜백 객체
     private LocationCallback locationCallback;
 
-    // 카카오 지도 관련 객체들
+    // 구글 지도 관련 객체들
     private MapView mapView;
-    private KakaoMap kakaoMap;
+    private GoogleMap googleMap;
     // 하단 시트 동작 제어 객체
     private BottomSheetBehavior<FrameLayout> bottomSheetBehavior;
     // 날짜 버튼 레이아웃
@@ -99,34 +95,6 @@ public class MapActivity extends AppCompatActivity {
     // 기간 시작과 끝
     private long startMillis;
     private long endMillis;
-
-    // 카카오 맵 준비 콜백
-    private KakaoMapReadyCallback readyCallback = new KakaoMapReadyCallback() {
-        @Override
-        public void onMapReady(@NonNull KakaoMap kakaoMap) {
-            // 지도 준비 완료 시 프로그레스바 숨기기
-            progressBar.setVisibility(View.GONE);
-            // 지도 중앙에 레이블 추가
-            LabelLayer layer = kakaoMap.getLabelManager().getLayer();
-            centerLabel = layer.addLabel(LabelOptions.from("centerLabel", startPosition)
-                    .setStyles(LabelStyle.from(R.drawable.red_dot_marker).setAnchorPoint(0.5f, 0.5f))
-                    .setRank(1));
-        }
-
-        @NonNull
-        @Override
-        public LatLng getPosition() {
-            // 지도 시작 위치 반환
-            return startPosition;
-        }
-
-        @NonNull
-        @Override
-        public int getZoomLevel() {
-            // 줌 레벨 설정
-            return 17;
-        }
-    };
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -155,9 +123,10 @@ public class MapActivity extends AppCompatActivity {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
-                // 위치 업데이트 시 지도 중앙 레이블 이동
+                // 위치 업데이트 시 지도 이동
                 for (Location location : locationResult.getLocations()) {
-                    centerLabel.moveTo(LatLng.from(location.getLatitude(), location.getLongitude()));
+                    LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation));
                 }
             }
         };
@@ -175,11 +144,26 @@ public class MapActivity extends AppCompatActivity {
 
         // 날짜 버튼들 생성
         createDayButtons();
+
+        // 구글맵 초기화
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        googleMap.addMarker(new MarkerOptions().position(startPosition).title("목포"));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, 15));
+
+        // 로딩이 완료되면 ProgressBar를 숨김
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        mapView.onResume();
         // 위치 업데이트 재개
         if (requestingLocationUpdates) {
             startLocationUpdates();
@@ -189,8 +173,21 @@ public class MapActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        mapView.onPause();
         // 위치 업데이트 중지
         fusedLocationClient.removeLocationUpdates(locationCallback);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
     }
 
     @SuppressLint("MissingPermission")
@@ -199,8 +196,8 @@ public class MapActivity extends AppCompatActivity {
         fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
-                        startPosition = LatLng.from(location.getLatitude(), location.getLongitude());
-                        mapView.start(readyCallback);
+                        LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
                     }
                 });
     }

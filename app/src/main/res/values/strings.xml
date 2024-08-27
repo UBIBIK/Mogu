@@ -12,4 +12,6 @@
         <item>음식점</item>
     </string-array>
 
+    <string name="map_view_description">Map displaying the location</string>
 </resources>
+

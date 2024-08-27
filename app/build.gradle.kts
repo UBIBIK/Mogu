@@ -62,4 +62,7 @@ dependencies {
     androidTestImplementation(libs.ext.junit) // AndroidX JUnit
     androidTestImplementation(libs.espresso.core) // Espresso
 
+    // Google Maps 의존성 추가
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

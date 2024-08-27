@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.kakao.vectormap.MapView
+        <!-- 구글 맵 뷰 -->
+        <com.google.android.gms.maps.MapView
             android:id="@+id/map_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -41,82 +42,82 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-        <!-- 드래그바 추가 -->
-        <View
-            android:id="@+id/handleBar"
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/handle_bar_background" />
+            <!-- 드래그바 추가 -->
+            <View
+                android:id="@+id/handleBar"
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/handle_bar_background" />
 
-        <!-- 날짜 버튼들을 담을 HorizontalScrollView -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
-
-            <LinearLayout
-                android:id="@+id/dateInfoLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" />
-
-        </HorizontalScrollView>
-
-        <!-- RecyclerView와 버튼들을 수직으로 배치하는 LinearLayout -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <!-- RecyclerView 추가 -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewPlaces"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="400"
-                android:orientation="vertical" />
-
-            <!-- 버튼들을 수평으로 배치하는 LinearLayout -->
-            <LinearLayout
+            <!-- 날짜 버튼들을 담을 HorizontalScrollView -->
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal">
+                android:layout_marginBottom="16dp">
 
-                <!-- 장소 추가 버튼 -->
-                <Button
-                    android:id="@+id/addPlaceButton"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:id="@+id/dateInfoLayout"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/rounded_button_selected"
-                    android:padding="12dp"
-                    android:text="장소 추가"
-                    android:textAllCaps="true"
-                    android:textColor="@drawable/button_text_selected"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginTop="10dp"
-                    android:textSize="14sp" />
+                    android:orientation="horizontal" />
 
-                <!-- 저장 버튼 -->
-                <Button
-                    android:id="@+id/saveButton"
-                    android:layout_width="0dp"
+            </HorizontalScrollView>
+
+            <!-- RecyclerView와 버튼들을 수직으로 배치하는 LinearLayout -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- RecyclerView 추가 -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewPlaces"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="400"
+                    android:orientation="vertical" />
+
+                <!-- 버튼들을 수평으로 배치하는 LinearLayout -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/rounded_button_selected"
-                    android:padding="12dp"
-                    android:text="저장"
-                    android:textAllCaps="true"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"
-                    android:textColor="@drawable/button_text_selected"
-                    android:textSize="14sp" />
+                    android:gravity="center_horizontal"
+                    android:orientation="horizontal">
+
+                    <!-- 장소 추가 버튼 -->
+                    <Button
+                        android:id="@+id/addPlaceButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/rounded_button_selected"
+                        android:padding="12dp"
+                        android:text="장소 추가"
+                        android:textAllCaps="true"
+                        android:textColor="@drawable/button_text_selected"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginTop="10dp"
+                        android:textSize="14sp" />
+
+                    <!-- 저장 버튼 -->
+                    <Button
+                        android:id="@+id/saveButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/rounded_button_selected"
+                        android:padding="12dp"
+                        android:text="저장"
+                        android:textAllCaps="true"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="10dp"
+                        android:textColor="@drawable/button_text_selected"
+                        android:textSize="14sp" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
         </LinearLayout>
     </FrameLayout>
 

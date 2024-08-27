@@ -180,7 +180,7 @@ public class HomeFragment extends Fragment {
                             if (xpp.getName().equals("item")) {
                                 // 첫 번째 이미지 URL이 포함된 경우에만 아이템 추가
                                 if (firstimage.contains("http")) {
-                                    TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid);
+                                    TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid,0,0);
                                     itemList.add(item);
                                 }
                             }

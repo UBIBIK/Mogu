@@ -1,0 +1,52 @@
+<!-- res/layout/list_place_item_map.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="@drawable/border_dark_gray">
+
+    <!-- 장소 이름 -->
+    <TextView
+        android:id="@+id/placeNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Place Name"
+        android:textSize="16sp"
+        android:textColor="@android:color/black" />
+
+    <!-- DAY 표시 -->
+    <TextView
+        android:id="@+id/dayTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Day"
+        android:textSize="14sp"
+        android:layout_gravity="end"
+        android:textColor="@android:color/darker_gray" />
+
+    <!-- 메모 표시 -->
+    <TextView
+        android:id="@+id/noteTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="4dp"
+        android:text="Note"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="14sp" />
+
+    <!-- 길찾기 버튼 -->
+    <Button
+        android:id="@+id/routeButton"
+        android:layout_width="75dp"
+        android:layout_height="40dp"
+        android:text="길찾기"
+        android:layout_gravity="end"
+        android:background="#48bbed"
+        android:textColor="@android:color/white"
+        android:padding="8dp"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>

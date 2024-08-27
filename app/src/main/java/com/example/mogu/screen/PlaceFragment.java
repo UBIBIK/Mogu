@@ -19,8 +19,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
+import com.example.mogu.custom.PlaceAdapter;
+import com.example.mogu.object.PlaceData;
 import com.example.mogu.object.TourApi;
-import com.example.mogu.custom.TourAdapter;
+import com.example.mogu.share.SharedPreferencesHelper;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -29,7 +31,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class PlaceFragment extends Fragment {
@@ -46,10 +47,13 @@ public class PlaceFragment extends Fragment {
     private static final String SERVICE_KEY = "iYq%2FBTYJSMKmITGfxxEBnluf6wJSfDjyGv8HUQJCYnqLkGKt%2BGTq4mNkwGDB5gEofiE34ur%2Fen1s7Nq1xWuLeg%3D%3D";
 
     private RecyclerView rcPlaceList;
-    private TourAdapter tourAdapter;
+    private PlaceAdapter placeAdapter;
     private EditText etSearch;
     private Spinner spCategory;
     private int contentTypeId;
+    private String day;
+    private PlaceData editPlaceData = null;
+    private int editPosition = -1;
 
     private static final String TAG = "PlaceFragment";
 
@@ -57,6 +61,17 @@ public class PlaceFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_place_search, container, false);
+        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(requireContext());
+
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            day = bundle.getString("selected_day");
+            editPlaceData = bundle.getParcelable("edit_place_data");
+            editPosition = bundle.getInt("edit_position", -1);
+
+            Log.d("PlaceFragment", "Selected Day: " + day);
+            Log.d("PlaceFragment", "Editing Place: " + editPlaceData);
+        }
 
         rcPlaceList = view.findViewById(R.id.recyclerViewPlaces);
         rcPlaceList.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -64,7 +79,6 @@ public class PlaceFragment extends Fragment {
         etSearch = view.findViewById(R.id.etSearch);
         spCategory = view.findViewById(R.id.spinnerCategory);
 
-        // 스피너 어댑터 설정
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 getContext(),
                 R.array.category_array,
@@ -73,11 +87,9 @@ public class PlaceFragment extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCategory.setAdapter(adapter);
 
-        // 기본 카테고리 (전체) 설정
-        contentTypeId = 0; // 전체 카테고리의 ID 설정
-        spCategory.setSelection(0); // '전체'를 기본 선택 항목으로 설정
+        contentTypeId = 0;
+        spCategory.setSelection(0);
 
-        // 카테고리 변경 시
         spCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
@@ -87,11 +99,9 @@ public class PlaceFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // 기본 카테고리 유지
             }
         });
 
-        // 검색 버튼 클릭 시
         Button btnSearch = view.findViewById(R.id.btnSearch);
         btnSearch.setOnClickListener(v -> fetchData());
 
@@ -119,16 +129,16 @@ public class PlaceFragment extends Fragment {
 
     private int getContentTypeId(int position) {
         switch (position) {
-            case 0: return 0; // 전체
-            case 1: return 12; // 관광지
-            case 2: return 14; // 문화시설
-            case 3: return 15; // 축제공연행사
-            case 4: return 25; // 여행코스
-            case 5: return 28; // 레포츠
-            case 6: return 32; // 숙박
-            case 7: return 38; // 쇼핑
-            case 8: return 39; // 음식점
-            default: return 0; // 기본값 전체
+            case 0: return 0;
+            case 1: return 12;
+            case 2: return 14;
+            case 3: return 15;
+            case 4: return 25;
+            case 5: return 28;
+            case 6: return 32;
+            case 7: return 38;
+            case 8: return 39;
+            default: return 0;
         }
     }
 
@@ -146,7 +156,7 @@ public class PlaceFragment extends Fragment {
 
         public FetchPlaceDataTask(String url, String searchQuery) {
             this.url = url;
-            this.searchQuery = searchQuery.trim(); // 공백 제거
+            this.searchQuery = searchQuery.trim();
         }
 
         @Override
@@ -170,12 +180,16 @@ public class PlaceFragment extends Fragment {
                 boolean tagAddr1 = false;
                 boolean tagAddr2 = false;
                 boolean tagContentid = false;
+                boolean tagMapx = false;
+                boolean tagMapy = false;
 
                 String firstimage = "";
                 String title = "";
                 String addr1 = "";
                 String addr2 = "";
                 String contentid = "";
+                double mapx = 0.0;
+                double mapy = 0.0;
 
                 XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
                 factory.setNamespaceAware(true);
@@ -191,6 +205,8 @@ public class PlaceFragment extends Fragment {
                         if (tagName.equals("addr1")) tagAddr1 = true;
                         if (tagName.equals("addr2")) tagAddr2 = true;
                         if (tagName.equals("contentid")) tagContentid = true;
+                        if (tagName.equals("mapx")) tagMapx = true;
+                        if (tagName.equals("mapy")) tagMapy = true;
                     } else if (eventType == XmlPullParser.TEXT) {
                         if (tagImage) {
                             firstimage = xpp.getText();
@@ -212,13 +228,21 @@ public class PlaceFragment extends Fragment {
                             contentid = xpp.getText();
                             tagContentid = false;
                         }
+                        if (tagMapx) {
+                            mapx = Double.parseDouble(xpp.getText());
+                            tagMapx = false;
+                        }
+                        if (tagMapy) {
+                            mapy = Double.parseDouble(xpp.getText());
+                            tagMapy = false;
+                        }
                     } else if (eventType == XmlPullParser.END_TAG) {
                         if (xpp.getName().equals("item")) {
                             Log.d(TAG, "Item Title: " + title);
                             if (firstimage.contains("http")) {
                                 boolean isMatch = searchQuery.isEmpty() || title.toLowerCase().contains(searchQuery.toLowerCase());
                                 if (isMatch) {
-                                    TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid);
+                                    TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid, mapx, mapy);
                                     itemList.add(item);
                                     Log.d(TAG, "Included Item: " + title);
                                 } else {
@@ -239,8 +263,8 @@ public class PlaceFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<TourApi> result) {
             super.onPostExecute(result);
-            tourAdapter = new TourAdapter(result);
-            rcPlaceList.setAdapter(tourAdapter);
+            placeAdapter = new PlaceAdapter(result, getContext(), day, editPlaceData, editPosition);
+            rcPlaceList.setAdapter(placeAdapter);
             Log.d(TAG, "Result List Size: " + result.size());
         }
     }

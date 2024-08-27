@@ -24,8 +24,8 @@
         android:layout_height="wrap_content"
         android:text="검색"
         android:layout_gravity="end"
-        android:background="@drawable/rounded_button_selected"
-        android:textColor="@drawable/button_text_selected"
+        android:background="#48bbed"
+        android:textColor="@android:color/white"
         android:layout_marginBottom="8dp"/>
 
     <!-- 카테고리 선택 -->

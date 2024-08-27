@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.example.mogu.object.GroupInfo;
+import com.example.mogu.object.PlaceData;
 import com.example.mogu.object.UserInfo;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -133,27 +135,6 @@ public class SharedPreferencesHelper {
         editor.apply();
     }
 
-    // 메모 저장
-    public void saveNoteForDay(String day, String note) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Map<String, ?> allNotes = sharedPreferences.getAll();
-        Map<String, String> notesMap = new HashMap<>();
-
-        for (Map.Entry<String, ?> entry : allNotes.entrySet()) {
-            if (entry.getKey().startsWith(KEY_NOTES_MAP)) {
-                String key = entry.getKey().substring(KEY_NOTES_MAP.length());
-                notesMap.put(key, (String) entry.getValue());
-            }
-        }
-
-        notesMap.put(day, note);
-        for (Map.Entry<String, String> entry : notesMap.entrySet()) {
-            editor.putString(KEY_NOTES_MAP + entry.getKey(), entry.getValue());
-        }
-
-        editor.apply();
-    }
-
     // 메모 불러오기
     public Map<String, String> getAllNotes() {
         Map<String, String> notesMap = new HashMap<>();
@@ -170,7 +151,7 @@ public class SharedPreferencesHelper {
     }
 
     // 장소 저장
-    public void savePlaces(Map<String, String> placesMap) {
+    public void savePlaces(Map<String, PlaceData> placesMap) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         // 기존 장소 제거
@@ -182,51 +163,94 @@ public class SharedPreferencesHelper {
         }
 
         // 새로운 장소 저장
-        for (Map.Entry<String, String> entry : placesMap.entrySet()) {
+        for (Map.Entry<String, PlaceData> entry : placesMap.entrySet()) {
             String key = entry.getKey();
-            String placeName = entry.getValue();
-            editor.putString(KEY_PLACES_MAP + key, placeName);
+            // PlaceData 객체를 JSON 문자열로 변환
+            String placeDataJson = gson.toJson(entry.getValue());
+            editor.putString(KEY_PLACES_MAP + key, placeDataJson);
         }
 
         editor.apply();
     }
 
-    // 장소 저장
-    public void savePlaceForDay(String day, String place) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+    public Map<String, List<PlaceData>> getAllPlacesGroupedByDay() {
+        Map<String, List<PlaceData>> groupedPlacesMap = new HashMap<>();
         Map<String, ?> allPlaces = sharedPreferences.getAll();
-        Map<String, String> placesMap = new HashMap<>();
 
         for (Map.Entry<String, ?> entry : allPlaces.entrySet()) {
             if (entry.getKey().startsWith(KEY_PLACES_MAP)) {
                 String key = entry.getKey().substring(KEY_PLACES_MAP.length());
-                placesMap.put(key, (String) entry.getValue());
+                String placeDataJson = (String) entry.getValue();
+
+                try {
+                    // JSON을 PlaceData 객체로 변환
+                    Type placeDataType = new TypeToken<PlaceData>() {}.getType();
+                    PlaceData placeData = gson.fromJson(placeDataJson, placeDataType);
+
+                    // 해당 DAY에 이미 데이터가 있으면 리스트에 추가하고, 없으면 새 리스트 생성
+                    if (!groupedPlacesMap.containsKey(key)) {
+                        groupedPlacesMap.put(key, new ArrayList<>());
+                    }
+                    groupedPlacesMap.get(key).add(placeData);
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    // 잘못된 형식의 데이터는 무시하거나 처리 로직 추가
+                }
             }
         }
 
-        placesMap.put(day, place);
-        for (Map.Entry<String, String> entry : placesMap.entrySet()) {
-            editor.putString(KEY_PLACES_MAP + entry.getKey(), entry.getValue());
+        return groupedPlacesMap;
+    }
+
+    public void savePlacesGroupedByDay(Map<String, List<PlaceData>> placesMap) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        // 기존 장소 제거
+        Map<String, ?> allPlaces = sharedPreferences.getAll();
+        for (Map.Entry<String, ?> entry : allPlaces.entrySet()) {
+            if (entry.getKey().startsWith(KEY_PLACES_MAP)) {
+                editor.remove(entry.getKey());
+            }
+        }
+
+        // 새로운 장소 저장
+        for (Map.Entry<String, List<PlaceData>> entry : placesMap.entrySet()) {
+            String key = entry.getKey();
+            // List<PlaceData> 객체를 JSON 문자열로 변환
+            String placeDataJson = gson.toJson(entry.getValue());
+            editor.putString(KEY_PLACES_MAP + key, placeDataJson);
         }
 
         editor.apply();
     }
 
+
+
     // 장소 불러오기
-    public Map<String, String> getAllPlaces() {
-        Map<String, String> placesMap = new HashMap<>();
+    public Map<String, PlaceData> getAllPlaces() {
+        Map<String, PlaceData> placesMap = new HashMap<>();
         Map<String, ?> allPlaces = sharedPreferences.getAll();
 
         for (Map.Entry<String, ?> entry : allPlaces.entrySet()) {
             if (entry.getKey().startsWith(KEY_PLACES_MAP)) {
                 String key = entry.getKey().substring(KEY_PLACES_MAP.length());
-                String placeName = (String) entry.getValue();
-                placesMap.put(key, placeName);
+                String placeDataJson = (String) entry.getValue();
+
+                try {
+                    // JSON 배열을 처리할 수 있도록 Type을 지정
+                    Type placeDataType = new TypeToken<PlaceData>() {}.getType();
+                    PlaceData placeData = gson.fromJson(placeDataJson, placeDataType);
+                    placesMap.put(key, placeData);
+                } catch (JsonSyntaxException e) {
+                    e.printStackTrace();
+                    // 잘못된 형식의 데이터는 무시하거나 처리 로직 추가
+                }
             }
         }
 
         return placesMap;
     }
+
 
     // 날짜와 기간을 포함한 데이터 클래스
     public static class DatePeriodData {
@@ -262,18 +286,6 @@ public class SharedPreferencesHelper {
             this.startDate = startDate;
             this.endDate = endDate;
             this.period = period;
-        }
-
-        public String getStartDate() {
-            return startDate;
-        }
-
-        public String getEndDate() {
-            return endDate;
-        }
-
-        public int getPeriod() {
-            return period;
         }
     }
 }

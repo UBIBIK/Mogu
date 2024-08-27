@@ -3,20 +3,18 @@
     <item android:state_selected="true">
         <shape xmlns:android="http://schemas.android.com/apk/res/android">
             <solid android:color="#48BBED"/> <!-- 선택된 버튼의 배경 색상 -->
-            <corners android:radius="16dp"/>
             <stroke
                 android:width="2dp"
-                android:color="#000000"/>
+                android:color="@android:color/darker_gray"/>
         </shape>
     </item>
     <!-- 기본 상태 -->
     <item>
         <shape xmlns:android="http://schemas.android.com/apk/res/android">
             <solid android:color="#FFFFFF"/> <!-- 기본 버튼의 배경 색상 -->
-            <corners android:radius="16dp"/>
             <stroke
                 android:width="2dp"
-                android:color="#000000"/>
+                android:color="@android:color/darker_gray"/>
         </shape>
     </item>
 </selector>

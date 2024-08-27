@@ -3,7 +3,7 @@ package com.example.mogu.object;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.kakao.vectormap.LatLng;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;

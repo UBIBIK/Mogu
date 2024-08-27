@@ -20,12 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
 import com.example.mogu.custom.PlaceAdapter;
-import com.example.mogu.object.PlaceData;
 import com.example.mogu.object.TourApi;
-import com.example.mogu.share.SharedPreferencesHelper;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -33,8 +29,12 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 public class PlaceFragment extends Fragment {
 
+    // Constants
     private static final int NUM_OF_ROWS = 10;
     private static final int PAGE_NO = 1;
     private static final String MOBILE_OS = "AND";
@@ -52,8 +52,6 @@ public class PlaceFragment extends Fragment {
     private Spinner spCategory;
     private int contentTypeId;
     private String day;
-    private PlaceData editPlaceData = null;
-    private int editPosition = -1;
 
     private static final String TAG = "PlaceFragment";
 
@@ -61,16 +59,10 @@ public class PlaceFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_place_search, container, false);
-        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(requireContext());
 
         Bundle bundle = getArguments();
         if (bundle != null) {
             day = bundle.getString("selected_day");
-            editPlaceData = bundle.getParcelable("edit_place_data");
-            editPosition = bundle.getInt("edit_position", -1);
-
-            Log.d("PlaceFragment", "Selected Day: " + day);
-            Log.d("PlaceFragment", "Editing Place: " + editPlaceData);
         }
 
         rcPlaceList = view.findViewById(R.id.recyclerViewPlaces);
@@ -99,6 +91,7 @@ public class PlaceFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
+                // Do nothing
             }
         });
 
@@ -263,8 +256,26 @@ public class PlaceFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<TourApi> result) {
             super.onPostExecute(result);
-            placeAdapter = new PlaceAdapter(result, getContext(), day, editPlaceData, editPosition);
+            placeAdapter = new PlaceAdapter(result, getContext(), day);
             rcPlaceList.setAdapter(placeAdapter);
+
+            // 장소가 선택되었을 때, 선택된 장소의 위치 정보를 MapActivity에 전달하는 리스너를 설정
+            placeAdapter.setOnPlaceSelectedListener((tourApi) -> {
+                LatLng selectedPlaceLatLng = new LatLng(tourApi.getMapy(), tourApi.getMapx());
+                String placeName = tourApi.getTitle();
+
+                // MapActivity에 선택된 장소를 추가
+                if (getActivity() instanceof MapActivity) {
+                    MapActivity mapActivity = (MapActivity) getActivity();
+                    mapActivity.addPlaceToMap(placeName, selectedPlaceLatLng);
+                }
+
+                // PlaceFragment 종료
+                if (getFragmentManager() != null) {
+                    getFragmentManager().popBackStack();
+                }
+            });
+
             Log.d(TAG, "Result List Size: " + result.size());
         }
     }

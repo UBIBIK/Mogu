@@ -19,6 +19,7 @@ import android.widget.ProgressBar;
 import android.Manifest;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -57,42 +58,27 @@ import java.util.concurrent.TimeUnit;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    // 위치 권한 요청 코드
-    private final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
-    // 위치 권한 배열
+    private static final int PLACE_SELECTION_REQUEST_CODE = 1002;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+
     private final String[] locationPermissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-    // 위치 서비스 제공자
     private FusedLocationProviderClient fusedLocationClient;
-    // 초기 위치 (목포)
     private LatLng startPosition = new LatLng(34.8118, 126.3922);
-    // 진행 상태 표시바
     private ProgressBar progressBar;
-    // 위치 업데이트 플래그
     private boolean requestingLocationUpdates = false;
-    // 위치 요청 객체
     private LocationRequest locationRequest;
-    // 위치 콜백 객체
     private LocationCallback locationCallback;
 
-    // 구글 지도 관련 객체들
     private MapView mapView;
     private GoogleMap googleMap;
-    // 하단 시트 동작 제어 객체
     private BottomSheetBehavior<FrameLayout> bottomSheetBehavior;
-    // 날짜 버튼 레이아웃
     private LinearLayout dateInfoLayout;
-    // 장소 추가 버튼
     private Button addPlaceButton;
-    // 저장 버튼
     private Button saveButton;
-    // 선택된 DAY 버튼
     private Button selectedDayButton = null;
-    // 장소 표시용 RecyclerView와 어댑터
     private RecyclerView placeRecyclerView;
     private PlaceDataAdapter placeDataAdapter;
-    // 저장된 장소 데이터를 저장하는 맵
     private Map<String, PlaceData> placesMap = new HashMap<>();
-    // 기간 시작과 끝
     private long startMillis;
     private long endMillis;
 
@@ -100,22 +86,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 레이아웃 설정
         setContentView(R.layout.activity_map);
 
-        // RecyclerView 설정
         placeRecyclerView = findViewById(R.id.recyclerViewPlaces);
         placeRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // SharedPreferencesHelper를 통해 저장된 날짜 데이터를 가져옴
         SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
         SharedPreferencesHelper.DatePeriodData datePeriodData = sharedPreferencesHelper.getDates();
 
-        // 시작 및 종료 시간을 가져옴
         startMillis = datePeriodData.getStartDateMillis();
         endMillis = datePeriodData.getEndDateMillis();
 
-        // 지도 및 위치 관련 객체들 초기화
         mapView = findViewById(R.id.map_view);
         progressBar = findViewById(R.id.progressBar);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -123,7 +104,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
-                // 위치 업데이트 시 지도 이동
                 for (Location location : locationResult.getLocations()) {
                     LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
                     googleMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation));
@@ -131,21 +111,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         };
 
-        // 위치 권한이 있으면 시작 위치 가져오기
         if (ContextCompat.checkSelfPermission(this, locationPermissions[0]) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, locationPermissions[1]) == PackageManager.PERMISSION_GRANTED) {
             getStartLocation();
         } else {
-            // 위치 권한 요청
             ActivityCompat.requestPermissions(this, locationPermissions, LOCATION_PERMISSION_REQUEST_CODE);
         }
 
-        // 하단 시트 초기화
         initializeBottomSheet();
-
-        // 날짜 버튼들 생성
         createDayButtons();
 
-        // 구글맵 초기화
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
     }
@@ -155,8 +129,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         this.googleMap = googleMap;
         googleMap.addMarker(new MarkerOptions().position(startPosition).title("목포"));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, 15));
-
-        // 로딩이 완료되면 ProgressBar를 숨김
         progressBar.setVisibility(View.GONE);
     }
 
@@ -164,7 +136,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onResume() {
         super.onResume();
         mapView.onResume();
-        // 위치 업데이트 재개
         if (requestingLocationUpdates) {
             startLocationUpdates();
         }
@@ -174,7 +145,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onPause() {
         super.onPause();
         mapView.onPause();
-        // 위치 업데이트 중지
         fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
@@ -192,7 +162,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @SuppressLint("MissingPermission")
     private void getStartLocation() {
-        // 현재 위치 가져오기
         fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
@@ -204,7 +173,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
-        // 위치 업데이트 시작
         requestingLocationUpdates = true;
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
     }
@@ -212,7 +180,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // 위치 권한 요청 결과 처리
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getStartLocation();
@@ -223,7 +190,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void showPermissionDeniedDialog() {
-        // 위치 권한이 거부된 경우 알림 대화 상자 표시
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("위치 권한 거부시 앱을 사용할 수 없습니다.")
                 .setPositiveButton("권한 설정하러 가기", (dialogInterface, i) -> {
@@ -244,29 +210,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void initializeBottomSheet() {
-        // 하단 시트 초기화
         CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinatorLayout);
         FrameLayout bottomSheet = findViewById(R.id.bottomSheetContainer);
 
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
-        // 날짜 버튼 레이아웃 및 버튼들 초기화
         dateInfoLayout = findViewById(R.id.dateInfoLayout);
         addPlaceButton = findViewById(R.id.addPlaceButton);
-        saveButton = findViewById(R.id.saveButton);  // 저장 버튼 찾기
+        saveButton = findViewById(R.id.saveButton);
 
         SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
         placesMap = sharedPreferencesHelper.getAllPlaces();
 
-        // 장소 추가 버튼 클릭 리스너 설정
         addPlaceButton.setOnClickListener(view -> {
             if (selectedDayButton != null) {
                 openPlaceFragment();
             }
         });
 
-        // 저장 버튼 클릭 리스너 설정
         saveButton.setOnClickListener(view -> {
             Intent intent = new Intent(MapActivity.this, HomeMap.class);
             startActivity(intent);
@@ -274,7 +236,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void createDayButtons() {
-        // 날짜 버튼들 생성
         Calendar startDate = Calendar.getInstance();
         startDate.setTimeInMillis(startMillis);
         Calendar endDate = Calendar.getInstance();
@@ -299,12 +260,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             params.setMargins(24, 0, 24, 0);
             dayButton.setLayoutParams(params);
 
-            // 날짜 버튼 클릭 리스너 설정
             dayButton.setOnClickListener(view -> selectDayButton(dayButton));
             dateInfoLayout.addView(dayButton);
         }
 
-        // 첫 번째 DAY 버튼을 기본 선택
         if (dateInfoLayout.getChildCount() > 0) {
             Button firstDayButton = (Button) dateInfoLayout.getChildAt(0);
             selectDayButton(firstDayButton);
@@ -312,7 +271,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void selectDayButton(Button button) {
-        // 선택된 버튼의 스타일 변경
         if (selectedDayButton != null) {
             selectedDayButton.setSelected(false);
             selectedDayButton.setBackgroundResource(R.drawable.rounded_button_selected);
@@ -324,11 +282,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         button.setTextColor(getResources().getColorStateList(R.drawable.button_text_selected));
         selectedDayButton = button;
 
-        // 선택된 DAY에 해당하는 장소 데이터를 가져옴
         String day = selectedDayButton.getText().toString();
         PlaceData placeData = placesMap.get(day);
 
-        // RecyclerView에 어댑터 설정
         if (placeData != null) {
             placeDataAdapter = new PlaceDataAdapter(placeData, placeData.getPlaceName(), placeData.getNotes(), this, day);
         } else {
@@ -337,14 +293,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         placeRecyclerView.setAdapter(placeDataAdapter);
 
-        // 장소 편집 리스너 설정
         placeDataAdapter.setOnEditPlaceListener((position, placeDataToEdit) -> {
             openPlaceFragmentForEditing(placeDataToEdit, position);
         });
     }
 
     private void openPlaceFragmentForEditing(PlaceData placeData, int position) {
-        // 장소 편집을 위한 Fragment 열기
         Fragment placeFragment = new PlaceFragment();
         Bundle bundle = new Bundle();
 
@@ -365,7 +319,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void openPlaceFragment() {
-        // 장소 추가를 위한 Fragment 열기
         Fragment placeFragment = new PlaceFragment();
         Bundle bundle = new Bundle();
 
@@ -374,8 +327,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             bundle.putString("selected_day", day);
         }
 
-        ArrayList<String> placesList = new ArrayList<>();
-        bundle.putStringArrayList("places_list", placesList);
         placeFragment.setArguments(bundle);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -386,8 +337,62 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private long getDateDifference(Calendar startDate, Calendar endDate) {
-        // 시작일과 종료일의 차이를 계산하여 반환
         long diffInMillis = endDate.getTimeInMillis() - startDate.getTimeInMillis();
         return TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PLACE_SELECTION_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            double placeLat = data.getDoubleExtra("place_lat", 0);
+            double placeLng = data.getDoubleExtra("place_lng", 0);
+
+            if (placeLat != 0 && placeLng != 0) {
+                LatLng placeLatLng = new LatLng(placeLat, placeLng);
+
+                if (googleMap != null) {
+                    googleMap.addMarker(new MarkerOptions().position(placeLatLng).title("Selected Place"));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLatLng, 15));
+                }
+
+                // PlaceData에 추가
+                String day = selectedDayButton.getText().toString();
+                PlaceData placeData = placesMap.get(day);
+
+                if (placeData == null) {
+                    placeData = new PlaceData();
+                }
+
+                placeData.addPlace("Selected Place", placeLatLng, "");
+                placesMap.put(day, placeData);
+
+                // RecyclerView를 갱신
+                placeDataAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    public void addPlaceToMap(String placeName, LatLng placeLatLng) {
+        if (googleMap != null) {
+            // 지도에 마커 추가
+            googleMap.addMarker(new MarkerOptions().position(placeLatLng).title(placeName));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLatLng, 15));
+
+            // PlaceData에 추가
+            String day = selectedDayButton.getText().toString();
+            PlaceData placeData = placesMap.get(day);
+
+            if (placeData == null) {
+                placeData = new PlaceData();
+            }
+
+            placeData.addPlace(placeName, placeLatLng, "");
+            placesMap.put(day, placeData);
+
+            // RecyclerView를 갱신
+            placeDataAdapter.notifyDataSetChanged();
+        }
     }
 }

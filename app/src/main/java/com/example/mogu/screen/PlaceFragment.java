@@ -52,6 +52,7 @@ public class PlaceFragment extends Fragment {
     private Spinner spCategory;
     private int contentTypeId;
     private String day;
+    private int editPosition = -1;  // 기본값은 -1로, 새 장소 추가를 의미
 
     private static final String TAG = "PlaceFragment";
 
@@ -63,6 +64,7 @@ public class PlaceFragment extends Fragment {
         Bundle bundle = getArguments();
         if (bundle != null) {
             day = bundle.getString("selected_day");
+            editPosition = bundle.getInt("edit_position", -1);  // 기본값 -1, 편집 모드인지 확인
         }
 
         rcPlaceList = view.findViewById(R.id.recyclerViewPlaces);
@@ -264,10 +266,10 @@ public class PlaceFragment extends Fragment {
                 LatLng selectedPlaceLatLng = new LatLng(tourApi.getMapy(), tourApi.getMapx());
                 String placeName = tourApi.getTitle();
 
-                // MapActivity에 선택된 장소를 추가
+                // MapActivity에 선택된 장소를 추가 또는 수정
                 if (getActivity() instanceof MapActivity) {
                     MapActivity mapActivity = (MapActivity) getActivity();
-                    mapActivity.addPlaceToMap(placeName, selectedPlaceLatLng);
+                    mapActivity.addPlaceToMap(placeName, selectedPlaceLatLng, editPosition);  // editPosition 전달
                 }
 
                 // PlaceFragment 종료

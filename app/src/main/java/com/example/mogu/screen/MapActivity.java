@@ -306,7 +306,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             String day = selectedDayButton.getText().toString();
             bundle.putString("selected_day", day);
             bundle.putParcelable("edit_place_data", placeData);
-            bundle.putInt("edit_position", position);
+            bundle.putInt("edit_position", position);  // 전달할 인덱스 설정
         }
 
         placeFragment.setArguments(bundle);
@@ -357,7 +357,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLatLng, 15));
                 }
 
-                // PlaceData에 추가
+                // PlaceData에 추가 또는 수정
                 String day = selectedDayButton.getText().toString();
                 PlaceData placeData = placesMap.get(day);
 
@@ -365,7 +365,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     placeData = new PlaceData();
                 }
 
-                placeData.addPlace("Selected Place", placeLatLng, "");
+                int editPosition = data.getIntExtra("edit_position", -1);
+                if (editPosition >= 0) {
+                    // 기존 장소를 수정
+                    placeData.updatePlace(editPosition, "Selected Place", placeLatLng, "");
+                } else {
+                    // 새로운 장소 추가
+                    placeData.addPlace("Selected Place", placeLatLng, "");
+                }
                 placesMap.put(day, placeData);
 
                 // RecyclerView를 갱신
@@ -374,13 +381,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    public void addPlaceToMap(String placeName, LatLng placeLatLng) {
+    public void addPlaceToMap(String placeName, LatLng placeLatLng, int editPosition) {
         if (googleMap != null) {
             // 지도에 마커 추가
             googleMap.addMarker(new MarkerOptions().position(placeLatLng).title(placeName));
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(placeLatLng, 15));
 
-            // PlaceData에 추가
+            // PlaceData에 추가 또는 수정
             String day = selectedDayButton.getText().toString();
             PlaceData placeData = placesMap.get(day);
 
@@ -388,7 +395,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 placeData = new PlaceData();
             }
 
-            placeData.addPlace(placeName, placeLatLng, "");
+            if (editPosition >= 0) {
+                // 기존 장소 수정
+                placeData.updatePlace(editPosition, placeName, placeLatLng, "");
+            } else {
+                // 새로운 장소 추가
+                placeData.addPlace(placeName, placeLatLng, "");
+            }
             placesMap.put(day, placeData);
 
             // RecyclerView를 갱신

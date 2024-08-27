@@ -2,7 +2,6 @@ package com.example.mogu.custom;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +18,6 @@ import com.example.mogu.share.SharedPreferencesHelper;
 
 import java.util.List;
 import java.util.Map;
-
-
-
-
 
 public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.ViewHolder> {
 
@@ -44,7 +39,6 @@ public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.View
     private String day;
     private Context context;
 
-
     public PlaceDataAdapter(PlaceData placeList, List<String> placeNames, List<String> notes, Context context, String day) {
         this.placeList = placeList;
         this.context = context;
@@ -60,8 +54,6 @@ public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.View
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_place_item, parent, false);
         return new ViewHolder(view);
     }
-
-
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
@@ -101,9 +93,9 @@ public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.View
 
             editPlaceButton.setOnClickListener(v -> {
                 if (onEditPlaceListener != null) {
-                    int position = getAdapterPosition();
+                    int position = getAdapterPosition();  // 현재 아이템의 위치를 가져옴
                     PlaceData placeData = placeList;
-                    onEditPlaceListener.onEditPlace(position, placeData);
+                    onEditPlaceListener.onEditPlace(position, placeData);  // 위치와 데이터를 전달
                 }
             });
         }

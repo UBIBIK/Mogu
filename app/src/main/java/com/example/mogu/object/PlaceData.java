@@ -55,6 +55,22 @@ public class PlaceData implements Parcelable {
         this.notes.add(note);
     }
 
+    /**
+     * 장소 정보를 수정하는 메서드
+     *
+     * @param index     수정할 장소의 인덱스
+     * @param placeName 새로운 장소 이름
+     * @param location  새로운 위치
+     * @param note      새로운 메모
+     */
+    public void updatePlace(int index, String placeName, LatLng location, String note) {
+        if (index >= 0 && index < placeNames.size()) {
+            this.placeNames.set(index, placeName);
+            this.locations.set(index, location);
+            this.notes.set(index, note);
+        }
+    }
+
     // Getter methods
     public List<String> getPlaceName() {
         return placeNames;

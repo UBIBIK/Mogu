@@ -2,7 +2,6 @@ package com.example.mogu.screen;
 
 import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -16,7 +15,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.Manifest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,9 +31,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
 import com.example.mogu.custom.PlaceDataAdapter;
+import com.example.mogu.object.CreateTripScheduleRequest;
+import com.example.mogu.object.LocationInfo;
 import com.example.mogu.object.PlaceData;
+import com.example.mogu.object.TripScheduleDetails;
+import com.example.mogu.object.TripScheduleInfo;
+import com.example.mogu.object.UserInfo;
+import com.example.mogu.retrofit.ApiService;
+import com.example.mogu.retrofit.RetrofitClient;
 import com.example.mogu.share.SharedPreferencesHelper;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -48,7 +52,11 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -56,12 +64,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int PLACE_SELECTION_REQUEST_CODE = 1002;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private static final String TAG = "MapActivity";
 
-    private final String[] locationPermissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+    private final String[] locationPermissions = {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION};
     private FusedLocationProviderClient fusedLocationClient;
     private LatLng startPosition = new LatLng(34.8118, 126.3922);
     private ProgressBar progressBar;
@@ -111,7 +124,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         };
 
-        if (ContextCompat.checkSelfPermission(this, locationPermissions[0]) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, locationPermissions[1]) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, locationPermissions[0]) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, locationPermissions[1]) == PackageManager.PERMISSION_GRANTED) {
             getStartLocation();
         } else {
             ActivityCompat.requestPermissions(this, locationPermissions, LOCATION_PERMISSION_REQUEST_CODE);
@@ -194,7 +208,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         builder.setMessage("위치 권한 거부시 앱을 사용할 수 없습니다.")
                 .setPositiveButton("권한 설정하러 가기", (dialogInterface, i) -> {
                     try {
-                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:" + getPackageName()));
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                .setData(Uri.parse("package:" + getPackageName()));
                         startActivity(intent);
                     } catch (ActivityNotFoundException e) {
                         e.printStackTrace();
@@ -230,8 +245,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
 
         saveButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MapActivity.this, HomeMap.class);
-            startActivity(intent);
+            saveTripSchedule();
         });
     }
 
@@ -306,7 +320,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             String day = selectedDayButton.getText().toString();
             bundle.putString("selected_day", day);
             bundle.putParcelable("edit_place_data", placeData);
-            bundle.putInt("edit_position", position);  // 전달할 인덱스 설정
+            bundle.putInt("edit_position", position);
         }
 
         placeFragment.setArguments(bundle);
@@ -407,5 +421,84 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             // RecyclerView를 갱신
             placeDataAdapter.notifyDataSetChanged();
         }
+    }
+
+    private void saveTripSchedule() {
+        // TripScheduleDetails 생성
+        List<TripScheduleDetails> tripScheduleDetailsList = createTripScheduleDetails();
+
+        // TripScheduleInfo 생성
+        LocalDate startDate = Instant.ofEpochMilli(startMillis).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = Instant.ofEpochMilli(endMillis).atZone(ZoneId.systemDefault()).toLocalDate();
+        TripScheduleInfo tripScheduleInfo = new TripScheduleInfo("groupKey", startDate, endDate);
+
+        // List를 ArrayList로 변환하여 설정
+        tripScheduleInfo.setTripScheduleDetails(new ArrayList<>(tripScheduleDetailsList));
+
+        // CreateTripScheduleRequest 생성
+        SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+        CreateTripScheduleRequest request = new CreateTripScheduleRequest(userInfo, tripScheduleInfo);
+
+        // 로그로 요청 데이터 확인
+        Log.d(TAG, "UserInfo: " + userInfo.getUserEmail());
+        Log.d(TAG, "StartDate: " + startDate.toString());
+        Log.d(TAG, "EndDate: " + endDate.toString());
+        for (TripScheduleDetails details : tripScheduleDetailsList) {
+            Log.d(TAG, "Day: " + details.getDay());
+            for (LocationInfo location : details.getLocationInfo()) {
+                Log.d(TAG, "Location: " + location.getLocationName() + " at " + location.getLatitude() + ", " + location.getLongitude());
+            }
+        }
+
+        // 서버로 요청 보내기
+        sendTripScheduleRequestToServer(request);
+    }
+
+    private List<TripScheduleDetails> createTripScheduleDetails() {
+        List<TripScheduleDetails> tripScheduleDetailsList = new ArrayList<>();
+        Calendar startDate = Calendar.getInstance();
+        startDate.setTimeInMillis(startMillis);
+        Calendar endDate = Calendar.getInstance();
+        endDate.setTimeInMillis(endMillis);
+
+        long numberOfDays = getDateDifference(startDate, endDate) + 1;
+
+        for (int i = 0; i < numberOfDays; i++) {
+            TripScheduleDetails details = new TripScheduleDetails();
+            String dayKey = "DAY" + (i + 1);
+            PlaceData placeData = placesMap.get(dayKey);
+            if (placeData != null) {
+                // List를 ArrayList로 변환하여 설정
+                details.setLocationInfo(new ArrayList<>(placeData.getLocationInfoList()));
+            }
+            tripScheduleDetailsList.add(details);
+        }
+
+        return tripScheduleDetailsList;
+    }
+
+
+    private void sendTripScheduleRequestToServer(CreateTripScheduleRequest request) {
+        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+        Call<UserInfo> call = apiService.createTripSchedule(request);
+        call.enqueue(new Callback<UserInfo>() {
+            @Override
+            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+                if (response.isSuccessful()) {
+                    // 서버 요청 성공 시 처리
+                    Log.d(TAG, "Trip schedule saved successfully.");
+                } else {
+                    // 서버 요청 실패 시 처리
+                    Log.e(TAG, "Failed to save trip schedule: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserInfo> call, Throwable t) {
+                // 네트워크 오류 처리
+                Log.e(TAG, "Error saving trip schedule", t);
+            }
+        });
     }
 }

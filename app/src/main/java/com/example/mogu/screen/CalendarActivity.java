@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mogu.R;
 import com.example.mogu.share.SharedPreferencesHelper;
@@ -18,9 +19,9 @@ import java.util.concurrent.TimeUnit;
 
 public class CalendarActivity extends AppCompatActivity {
 
-    public CalendarView calendarView1, calendarView2;
-    public Button apply_Btn;
-    public TextView selectedDatesLabel, selectedDates, durationText;
+    private CalendarView calendarView1, calendarView2;
+    private Button apply_Btn;
+    private TextView selectedDatesLabel, selectedDates, durationText;
     private Calendar firstSelectedDate = null;
     private Calendar secondSelectedDate = null;
     private SharedPreferencesHelper sharedPreferencesHelper;
@@ -103,16 +104,22 @@ public class CalendarActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (firstSelectedDate != null && secondSelectedDate != null) {
-                    long startMillis = firstSelectedDate.getTimeInMillis();
-                    long endMillis = secondSelectedDate.getTimeInMillis();
+                    if (firstSelectedDate.after(secondSelectedDate)) {
+                        Toast.makeText(CalendarActivity.this, "종료 날짜는 시작 날짜 이후여야 합니다.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        long startMillis = firstSelectedDate.getTimeInMillis();
+                        long endMillis = secondSelectedDate.getTimeInMillis();
 
-                    // 선택한 날짜를 SharedPreferences에 저장
-                    sharedPreferencesHelper.saveDates(startMillis, endMillis);
+                        // 선택한 날짜를 SharedPreferences에 저장
+                        sharedPreferencesHelper.saveDates(startMillis, endMillis);
 
-                    Intent intent = new Intent(CalendarActivity.this, MapActivity.class);
-                    intent.putExtra("startDate", startMillis);
-                    intent.putExtra("endDate", endMillis);
-                    startActivity(intent);
+                        Intent intent = new Intent(CalendarActivity.this, MapActivity.class);
+                        intent.putExtra("startDate", startMillis);
+                        intent.putExtra("endDate", endMillis);
+                        startActivity(intent);
+                    }
+                } else {
+                    Toast.makeText(CalendarActivity.this, "날짜를 선택해주세요.", Toast.LENGTH_SHORT).show();
                 }
             }
         });

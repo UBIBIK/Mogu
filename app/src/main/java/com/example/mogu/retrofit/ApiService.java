@@ -1,6 +1,7 @@
 package com.example.mogu.retrofit;
 
 import com.example.mogu.object.CreateGroupRequest;
+import com.example.mogu.object.CreateTripScheduleRequest;
 import com.example.mogu.object.DeleteGroupMemberRequest;
 import com.example.mogu.object.JoinGroupRequest;
 import com.example.mogu.object.UserInfo;
@@ -28,4 +29,7 @@ public interface ApiService {
 
     @POST("/api/DeleteGroupMember")
     Call<UserInfo> deleteGroupMember(@Body DeleteGroupMemberRequest request);
+
+    @POST("/api/createTripSchedule")
+    Call<UserInfo> createTripSchedule(@Body CreateTripScheduleRequest request);
 }

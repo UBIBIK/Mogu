@@ -108,4 +108,26 @@ public class PlaceData implements Parcelable {
     public void setNoteAt(int index, String note) {
         this.notes.set(index, note);
     }
+
+    // LocationInfo 리스트 반환 메서드 추가
+    public List<LocationInfo> getLocationInfoList() {
+        List<LocationInfo> locationInfoList = new ArrayList<>();
+
+        for (int i = 0; i < placeNames.size(); i++) {
+            String placeName = placeNames.get(i);
+            LatLng location = locations.get(i);
+            String note = notes.get(i);
+
+            LocationInfo locationInfo = new LocationInfo(
+                    placeName,
+                    "Address", // 만약 주소를 추가로 받아오거나 관리할 경우 이 부분을 수정합니다.
+                    location.latitude,
+                    location.longitude,
+                    note
+            );
+            locationInfoList.add(locationInfo);
+        }
+
+        return locationInfoList;
+    }
 }

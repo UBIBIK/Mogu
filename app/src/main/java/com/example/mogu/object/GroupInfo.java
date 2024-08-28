@@ -8,7 +8,7 @@ public class GroupInfo {
     private String gmEmail;
     private String gmName;
     private ArrayList<GroupMember> groupMember = new ArrayList<>();
-    private TripScheduleInfo tripScheduleList;
+    private ArrayList<TripScheduleInfo> tripScheduleList;
     private boolean expanded;
 
     public boolean isExpanded() {
@@ -29,11 +29,11 @@ public class GroupInfo {
         this.groupMember = groupMember;
     }
 
-    public TripScheduleInfo getTripScheduleList() {
+    public ArrayList<TripScheduleInfo> getTripScheduleList() {
         return tripScheduleList;
     }
 
-    public void setTripScheduleList(TripScheduleInfo tripScheduleList) {
+    public void setTripScheduleList(ArrayList<TripScheduleInfo> tripScheduleList) {
         this.tripScheduleList = tripScheduleList;
     }
 

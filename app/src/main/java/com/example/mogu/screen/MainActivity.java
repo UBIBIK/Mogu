@@ -47,13 +47,14 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferencesHelper = new SharedPreferencesHelper(this);
         apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
 
+        sharedPreferencesHelper.clearUserInfo();
         // 저장된 사용자 정보가 있을 경우 자동 로그인 시도
-        UserInfo savedUser = sharedPreferencesHelper.getUserInfo();
+        /*UserInfo savedUser = sharedPreferencesHelper.getUserInfo();
         if (savedUser.getUserEmail() != null && !savedUser.getUserEmail().isEmpty()) {
             // 자동 로그인 또는 저장된 사용자 정보로 작업을 수행
             Toast.makeText(this, "자동 로그인: " + savedUser.getUserName(), Toast.LENGTH_SHORT).show();
             //TODO:자동로그인 해제 해둔거 나중에 주석 풀기 loginWithSavedUser(savedUser);
-        }
+        }*/
 
         // 로그인 버튼 클릭 리스너 설정
         findViewById(R.id.loginButton).setOnClickListener(v -> loginUser(

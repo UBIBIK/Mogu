@@ -8,7 +8,16 @@ public class GroupInfo {
     private String gmEmail;
     private String gmName;
     private ArrayList<GroupMember> groupMember = new ArrayList<>();
-    private boolean isExpanded; // 그룹 확장 상태 필드 추가
+    private TripScheduleInfo tripScheduleList;
+    private boolean expanded;
+
+    public boolean isExpanded() {
+        return expanded;
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
+    }
 
     public GroupInfo() {}
 
@@ -18,7 +27,14 @@ public class GroupInfo {
         this.gmEmail = gmEmail;
         this.gmName = gmName;
         this.groupMember = groupMember;
-        this.isExpanded = false; // 기본값은 확장되지 않은 상태
+    }
+
+    public TripScheduleInfo getTripScheduleList() {
+        return tripScheduleList;
+    }
+
+    public void setTripScheduleList(TripScheduleInfo tripScheduleList) {
+        this.tripScheduleList = tripScheduleList;
     }
 
     public String getGroupName() {
@@ -61,11 +77,4 @@ public class GroupInfo {
         this.groupMember = groupMember;
     }
 
-    public boolean isExpanded() {
-        return isExpanded;
-    }
-
-    public void setExpanded(boolean expanded) {
-        isExpanded = expanded;
-    }
 }

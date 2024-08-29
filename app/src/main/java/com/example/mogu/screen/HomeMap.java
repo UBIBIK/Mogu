@@ -1,4 +1,8 @@
-package com.example.mogu.screen;
+/*package com.example.mogu.screen;
+
+TODO: SharedPreferencesHelper구조 변경으로 인한 주석처리, SharedPreferencesHelper에서 일정 정보를 받아 오는게 아닌
+ 로그인하면서 받아온 UserInfo에 들어있는 일정 정보를 이용할 것, 그룹이 여러개 있을테니 어떤 그룹의 일정 정보를 가져올지
+ 선택하는 옵션 추가할 것. 시봉방거 작업 속도 좀 올려주십쇼
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -355,3 +359,4 @@ public class HomeMap extends AppCompatActivity {
         return TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
     }
 }
+*/

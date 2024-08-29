@@ -14,10 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
 import com.example.mogu.object.PlaceData;
-import com.example.mogu.share.SharedPreferencesHelper;
 
 import java.util.List;
-import java.util.Map;
 
 public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.ViewHolder> {
 
@@ -35,14 +33,12 @@ public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.View
     private PlaceData placeList;
     private List<String> placeNames;  // 장소 이름 목록
     private List<String> notes;  // 메모 목록
-    private SharedPreferencesHelper sharedPreferencesHelper;
     private String day;
     private Context context;
 
     public PlaceDataAdapter(PlaceData placeList, List<String> placeNames, List<String> notes, Context context, String day) {
         this.placeList = placeList;
         this.context = context;
-        this.sharedPreferencesHelper = new SharedPreferencesHelper(context);
         this.day = day;
         this.placeNames = placeNames;
         this.notes = notes;
@@ -65,6 +61,13 @@ public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.View
     @Override
     public int getItemCount() {
         return placeNames.size();
+    }
+
+    public void updateData(PlaceData newData, List<String> newPlaceNames, List<String> newNotes) {
+        this.placeList = newData;
+        this.placeNames = newPlaceNames;
+        this.notes = newNotes;
+        notifyDataSetChanged();  // 데이터 변경 시 어댑터 갱신
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -120,12 +123,9 @@ public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.View
                     notes.set(position, newNote);
                     notifyItemChanged(position);
 
-                    // 수정된 데이터를 SharedPreferences에 저장
+                    // PlaceData 객체를 업데이트
                     placeList.setNotes(notes);
                     placeList.setPlaceName(placeNames); // 수정된 장소명도 함께 저장
-                    Map<String, PlaceData> placesMap = sharedPreferencesHelper.getAllPlaces();
-                    placesMap.put(day, placeList);
-                    sharedPreferencesHelper.savePlaces(placesMap);
 
                     dialog.dismiss();
                 } else {
@@ -142,11 +142,6 @@ public class PlaceDataAdapter extends RecyclerView.Adapter<PlaceDataAdapter.View
             notes.remove(position);
             placeList.setPlaceName(placeNames);
             placeList.setNotes(notes);
-
-            // 수정된 데이터를 SharedPreferences에 저장
-            Map<String, PlaceData> placesMap = sharedPreferencesHelper.getAllPlaces();
-            placesMap.put(day, placeList);
-            sharedPreferencesHelper.savePlaces(placesMap);
 
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, placeNames.size());

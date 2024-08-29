@@ -3,8 +3,10 @@ package com.example.mogu.screen;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
@@ -12,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mogu.R;
-import com.example.mogu.share.SharedPreferencesHelper;
 
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -24,15 +25,11 @@ public class CalendarActivity extends AppCompatActivity {
     private TextView selectedDatesLabel, selectedDates, durationText;
     private Calendar firstSelectedDate = null;
     private Calendar secondSelectedDate = null;
-    private SharedPreferencesHelper sharedPreferencesHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calendar);
-
-        // SharedPreferencesHelper 초기화
-        sharedPreferencesHelper = new SharedPreferencesHelper(this);
 
         calendarView1 = findViewById(R.id.calendarView1);
         calendarView2 = findViewById(R.id.calendarView2);
@@ -53,26 +50,12 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView1.setMinDate(todayMillis); // 오늘 날짜 이후만 선택 가능
         calendarView2.setMinDate(todayMillis); // 오늘 날짜 이후만 선택 가능
 
-        // 이전에 저장된 날짜가 있는지 확인하고 불러오기
-        SharedPreferencesHelper.DatePeriodData datePeriodData = sharedPreferencesHelper.getDates();
-        if (datePeriodData.getStartDateMillis() != -1 && datePeriodData.getEndDateMillis() != -1) {
-            firstSelectedDate = Calendar.getInstance();
-            firstSelectedDate.setTimeInMillis(datePeriodData.getStartDateMillis());
-            calendarView1.setDate(datePeriodData.getStartDateMillis());
+        // 기본적으로 오늘 날짜를 선택하도록 설정
+        calendarView1.setDate(todayMillis);
+        calendarView2.setDate(todayMillis);
 
-            secondSelectedDate = Calendar.getInstance();
-            secondSelectedDate.setTimeInMillis(datePeriodData.getEndDateMillis());
-            calendarView2.setDate(datePeriodData.getEndDateMillis());
-
-            updateSelectedDatesDisplay();
-        } else {
-            // 기본적으로 오늘 날짜를 선택하도록 설정
-            calendarView1.setDate(todayMillis);
-            calendarView2.setDate(todayMillis);
-
-            firstSelectedDate = (Calendar) today.clone();
-            secondSelectedDate = (Calendar) today.clone();
-        }
+        firstSelectedDate = (Calendar) today.clone();
+        secondSelectedDate = (Calendar) today.clone();
 
         calendarView1.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -110,12 +93,25 @@ public class CalendarActivity extends AppCompatActivity {
                         long startMillis = firstSelectedDate.getTimeInMillis();
                         long endMillis = secondSelectedDate.getTimeInMillis();
 
-                        // 선택한 날짜를 SharedPreferences에 저장
-                        sharedPreferencesHelper.saveDates(startMillis, endMillis);
+                        // 기간 계산 (두 날짜 모두 포함)
+                        long duration = getDateDifference(firstSelectedDate, secondSelectedDate) + 1;
 
+                        // 날짜 형식 지정
+                        @SuppressLint("DefaultLocale") String formattedStartDate = String.format("%d년 %d월 %d일", firstSelectedDate.get(Calendar.YEAR),
+                                firstSelectedDate.get(Calendar.MONTH) + 1, firstSelectedDate.get(Calendar.DAY_OF_MONTH));
+                        @SuppressLint("DefaultLocale") String formattedEndDate = String.format("%d년 %d월 %d일", secondSelectedDate.get(Calendar.YEAR),
+                                secondSelectedDate.get(Calendar.MONTH) + 1, secondSelectedDate.get(Calendar.DAY_OF_MONTH));
+
+                        // 로그 출력
+                        Log.d("CalendarActivity", "선택한 여행 기간: " + formattedStartDate + " ~ " + formattedEndDate + ", 총 " + duration + "일");
+
+                        // 선택한 날짜와 기간을 Intent에 담아 MapActivity로 전달
                         Intent intent = new Intent(CalendarActivity.this, MapActivity.class);
                         intent.putExtra("startDate", startMillis);
                         intent.putExtra("endDate", endMillis);
+                        intent.putExtra("duration", duration);
+                        intent.putExtra("formattedStartDate", formattedStartDate);
+                        intent.putExtra("formattedEndDate", formattedEndDate);
                         startActivity(intent);
                     }
                 } else {
@@ -125,6 +121,7 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateSelectedDatesDisplay() {
         if (firstSelectedDate != null && secondSelectedDate != null) {
             Calendar startDate = firstSelectedDate;
@@ -135,20 +132,21 @@ public class CalendarActivity extends AppCompatActivity {
                 endDate = firstSelectedDate;
             }
 
-            String formattedStartDate = String.format("%d년 %d월 %d일", startDate.get(Calendar.YEAR),
+            @SuppressLint("DefaultLocale") String formattedStartDate = String.format("%d년 %d월 %d일", startDate.get(Calendar.YEAR),
                     startDate.get(Calendar.MONTH) + 1, startDate.get(Calendar.DAY_OF_MONTH));
-            String formattedEndDate = String.format("%d년 %d월 %d일", endDate.get(Calendar.YEAR),
+            @SuppressLint("DefaultLocale") String formattedEndDate = String.format("%d년 %d월 %d일", endDate.get(Calendar.YEAR),
                     endDate.get(Calendar.MONTH) + 1, endDate.get(Calendar.DAY_OF_MONTH));
 
             selectedDates.setText(formattedStartDate + " ~ " + formattedEndDate);
 
-            long duration = getDateDifference(startDate, endDate);
+            // 기간 계산 (두 날짜 모두 포함)
+            long duration = getDateDifference(startDate, endDate) + 1;
             durationText.setText("기간: " + duration + "일");
         } else if (firstSelectedDate != null) {
-            String formattedFirstDate = String.format("%d년 %d월 %d일", firstSelectedDate.get(Calendar.YEAR),
+            @SuppressLint("DefaultLocale") String formattedFirstDate = String.format("%d년 %d월 %d일", firstSelectedDate.get(Calendar.YEAR),
                     firstSelectedDate.get(Calendar.MONTH) + 1, firstSelectedDate.get(Calendar.DAY_OF_MONTH));
             selectedDates.setText(formattedFirstDate);
-            durationText.setText("");
+            durationText.setText("기간: 1일");
         }
 
         selectedDatesLabel.setVisibility(View.VISIBLE);

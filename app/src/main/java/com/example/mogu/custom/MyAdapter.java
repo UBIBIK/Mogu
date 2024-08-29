@@ -27,11 +27,11 @@ import java.util.ArrayList;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     private ArrayList<TourApi> items;
-    private static final String DETAIL_SERVICE_URL = "http://apis.data.go.kr/B551011/KorService1/detailCommon1";
-    private static final String SERVICE_KEY = "iYq%2FBTYJSMKmITGfxxEBnluf6wJSfDjyGv8HUQJCYnqLkGKt%2BGTq4mNkwGDB5gEofiE34ur%2Fen1s7Nq1xWuLeg%3D%3D";
-    private static final String MOBILE_OS = "AND";
-    private static final String MOBILE_APP = "AppTest";
-    private static final String OVERVIEWYN = "Y";
+    static final String DETAIL_SERVICE_URL = "http://apis.data.go.kr/B551011/KorService1/detailCommon1";
+    static final String SERVICE_KEY = "iYq%2FBTYJSMKmITGfxxEBnluf6wJSfDjyGv8HUQJCYnqLkGKt%2BGTq4mNkwGDB5gEofiE34ur%2Fen1s7Nq1xWuLeg%3D%3D";
+    static final String MOBILE_OS = "AND";
+    static final String MOBILE_APP = "AppTest";
+    static final String OVERVIEWYN = "Y";
 
     public MyAdapter(ArrayList<TourApi> items) {
         this.items = items;

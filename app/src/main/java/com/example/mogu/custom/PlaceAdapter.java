@@ -1,5 +1,11 @@
 package com.example.mogu.custom;
 
+import static com.example.mogu.custom.MyAdapter.DETAIL_SERVICE_URL;
+import static com.example.mogu.custom.MyAdapter.MOBILE_APP;
+import static com.example.mogu.custom.MyAdapter.MOBILE_OS;
+import static com.example.mogu.custom.MyAdapter.OVERVIEWYN;
+import static com.example.mogu.custom.MyAdapter.SERVICE_KEY;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -20,7 +26,6 @@ import com.bumptech.glide.Glide;
 import com.example.mogu.R;
 import com.example.mogu.object.PlaceData;
 import com.example.mogu.object.TourApi;
-import com.example.mogu.share.SharedPreferencesHelper;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -32,18 +37,10 @@ import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> {
 
     private final ArrayList<TourApi> items;
-    private final SharedPreferencesHelper sharedPreferencesHelper;
-    private static final String DETAIL_SERVICE_URL = "http://apis.data.go.kr/B551011/KorService1/detailCommon1";
-    private static final String SERVICE_KEY = "iYq%2FBTYJSMKmITGfxxEBnluf6wJSfDjyGv8HUQJCYnqLkGKt%2BGTq4mNkwGDB5gEofiE34ur%2Fen1s7Nq1xWuLeg%3D%3D";
-    private static final String MOBILE_OS = "AND";
-    private static final String MOBILE_APP = "AppTest";
-    private static final String OVERVIEWYN = "Y";
     private String placeName;
     private final String day;
 
@@ -60,7 +57,6 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
 
     public PlaceAdapter(ArrayList<TourApi> items, Context context, String day) {
         this.items = items;
-        this.sharedPreferencesHelper = new SharedPreferencesHelper(context);
         this.day = day;
     }
 
@@ -87,7 +83,6 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
         private final TextView txtTitle;
         private final TextView txtAddr1;
         private final TextView txtAddr2;
-        private Map<String, PlaceData> placesMap;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -95,11 +90,6 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
             txtTitle = itemView.findViewById(R.id.tvTitle);
             txtAddr1 = itemView.findViewById(R.id.tvAddr1);
             txtAddr2 = itemView.findViewById(R.id.tvAddr2);
-
-            placesMap = sharedPreferencesHelper.getAllPlaces();
-            if (placesMap == null) {
-                placesMap = new HashMap<>(); // null이면 새로 초기화
-            }
 
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -146,20 +136,12 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
 
                         LatLng placeLatLng = new LatLng(latitude, longitude);
 
-                        PlaceData placeData = placesMap.get(day);
-                        if (placeData == null) {
-                            placeData = new PlaceData();
-                        }
+                        PlaceData placeData = new PlaceData();
                         placeData.addPlace(placeName, placeLatLng, ""); // 빈 노트를 기본값으로 설정
-
-                        placesMap.put(day, placeData);
-
-                        sharedPreferencesHelper.savePlaces(placesMap);
 
                         Log.d("PlaceAdapter", "날짜: " + day);
                         Log.d("PlaceAdapter", "장소 이름: " + placeName);
                         Log.d("PlaceAdapter", "위도: " + latitude + ", 경도: " + longitude);
-                        Log.d("PlaceAdapter", "전체 장소 데이터: " + placesMap.toString());
 
                         if (onPlaceSelectedListener != null) {
                             onPlaceSelectedListener.onPlaceSelected(item);

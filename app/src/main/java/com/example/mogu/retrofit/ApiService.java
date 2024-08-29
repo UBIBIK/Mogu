@@ -30,6 +30,6 @@ public interface ApiService {
     @POST("/api/DeleteGroupMember")
     Call<UserInfo> deleteGroupMember(@Body DeleteGroupMemberRequest request);
 
-    @POST("/api/createTripSchedule")
+    @POST("/api/TripScheduleCreate")
     Call<UserInfo> createTripSchedule(@Body CreateTripScheduleRequest request);
 }

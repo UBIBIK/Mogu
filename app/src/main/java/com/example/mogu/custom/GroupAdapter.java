@@ -133,7 +133,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
                 btnManageSchedule.setOnClickListener(v -> {
                     // 일정관리 화면으로 이동
                     Intent intent = new Intent(fragment.getContext(), CalendarActivity.class);
-                    intent.putExtra("group_key", group.getGroupKey());
+                    intent.putExtra("group_key", group.getGroupKey()); // groupKey를 Intent에 추가
                     fragment.startActivity(intent);
                 });
             } else {

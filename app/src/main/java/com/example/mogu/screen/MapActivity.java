@@ -477,13 +477,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     // 여행 일정을 저장하는 메서드
     private void saveTripSchedule() {
+        // Intent에서 groupKey를 가져옴
+        String groupKey = getIntent().getStringExtra("group_key");
+
         // TripScheduleDetails 생성
         List<TripScheduleDetails> tripScheduleDetailsList = createTripScheduleDetails();
 
         // TripScheduleInfo 생성
         LocalDate startDate = Instant.ofEpochMilli(startMillis).atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate endDate = Instant.ofEpochMilli(endMillis).atZone(ZoneId.systemDefault()).toLocalDate();
-        TripScheduleInfo tripScheduleInfo = new TripScheduleInfo("groupKey", startDate, endDate);
+        TripScheduleInfo tripScheduleInfo = new TripScheduleInfo(groupKey, startDate, endDate); // groupKey를 포함
 
         // List를 ArrayList로 변환하여 설정
         tripScheduleInfo.setTripScheduleDetails(new ArrayList<>(tripScheduleDetailsList));
@@ -495,6 +498,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // 로그로 요청 데이터 확인
         Log.d(TAG, "UserInfo: " + userInfo.getUserEmail());
+        Log.d(TAG, "GroupKey: " + groupKey); // groupKey 로그로 출력
         Log.d(TAG, "StartDate: " + startDate.toString());
         Log.d(TAG, "EndDate: " + endDate.toString());
         for (TripScheduleDetails details : tripScheduleDetailsList) {
@@ -507,6 +511,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // 서버로 요청 보내기
         sendTripScheduleRequestToServer(request);
     }
+
 
     // 여행 일정 세부 정보를 생성하는 메서드
     private List<TripScheduleDetails> createTripScheduleDetails() {

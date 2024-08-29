@@ -25,11 +25,15 @@ public class CalendarActivity extends AppCompatActivity {
     private TextView selectedDatesLabel, selectedDates, durationText;
     private Calendar firstSelectedDate = null;
     private Calendar secondSelectedDate = null;
+    private String groupKey;  // groupKey를 저장할 변수
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calendar);
+
+        // Intent로부터 groupKey를 가져옴
+        groupKey = getIntent().getStringExtra("group_key");
 
         calendarView1 = findViewById(R.id.calendarView1);
         calendarView2 = findViewById(R.id.calendarView2);
@@ -112,6 +116,7 @@ public class CalendarActivity extends AppCompatActivity {
                         intent.putExtra("duration", duration);
                         intent.putExtra("formattedStartDate", formattedStartDate);
                         intent.putExtra("formattedEndDate", formattedEndDate);
+                        intent.putExtra("group_key", groupKey); // groupKey를 Intent에 추가
                         startActivity(intent);
                     }
                 } else {

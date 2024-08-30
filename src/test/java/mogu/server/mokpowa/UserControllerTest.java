@@ -28,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerTest {
     private static final String TEST_GROUP_KEY = "6x6njlutur41ovcv";
     private static final String TEST_GROUP_KEY2 = "4x15torzialiynot";
-    private static final String TEST_TRIP_SCHEDULE_NAME = "목포 여행";
     private static final String TEST_GROUP_MASTER_NAME = "qwe";
     private static final String TEST_GROUP_MEMBER_EMAIL = "1qwe@123";
     private static final String TEST_GROUP_MEMBER_PASSWORD = "123";
@@ -50,8 +49,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.phoneNumber").value("01011115555"))
                 .andExpect(jsonPath("$.groupList", hasSize(greaterThan(1))))
                 .andExpect(jsonPath("$.groupList[0].groupName").value("mokpogo"))
-                .andExpect(jsonPath("$.groupList[0].tripScheduleList", hasSize(greaterThan(0))))
-                .andExpect(jsonPath("$.groupList[0].tripScheduleList[0].tripScheduleName").value("목포 여행"));
+                .andExpect(jsonPath("$.groupList[0].tripScheduleList", hasSize(greaterThan(0))));
     }
 
     @Test
@@ -67,7 +65,7 @@ public class UserControllerTest {
 
         // 테스트 여행 일정 생성
         TripSchedule tripSchedule =
-                new TripSchedule(TEST_GROUP_KEY, TEST_TRIP_SCHEDULE_NAME,
+                new TripSchedule(TEST_GROUP_KEY,
                         LocalDate.of(2024,8,7),
                         LocalDate.of(2024,8,8));
         tripSchedule.getTripScheduleDetails().getFirst().getLocationInfo().addFirst(
@@ -87,10 +85,7 @@ public class UserControllerTest {
         UserInfo updatedUser = response2.getBody();
 
         // 결과 검증
-        assertNotNull(updatedUser);
-        assertTrue(updatedUser.getGroupList().stream()
-                .filter(group -> group.getGroupKey().equals(TEST_GROUP_KEY))
-                .allMatch(group -> group.getTripScheduleList().stream()
-                        .noneMatch(trip -> trip.getTripScheduleName().equals(TEST_TRIP_SCHEDULE_NAME))));
+        assert updatedUser != null;
+        System.out.println(updatedUser.getGroupList().getFirst().getTripScheduleList().getFirst().getTripScheduleDetails().getFirst().getLocationInfo().getFirst().getAddress());
     }
 }

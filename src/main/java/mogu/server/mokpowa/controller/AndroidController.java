@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 @Slf4j
@@ -75,15 +76,23 @@ public class AndroidController {
                 for (GroupInfo groupInfo : loginUser.getGroupList()) {
                     log.info("가입된 그룹 정보 : {}", groupInfo.getGroupName());
 
+                    // TripScheduleList가 null인 경우 초기화
+                    if (groupInfo.getTripScheduleList() == null) {
+                        groupInfo.setTripScheduleList(new ArrayList<>());
+                    }
+
                     // 각 그룹별로 TripSchedule 추가
                     TripSchedule tripSchedule = tripScheduleRepository.getTripScheduleDetails(groupInfo.getGroupKey());
                     if (tripSchedule != null) {
                         groupInfo.getTripScheduleList().add(tripSchedule); // 그룹에 TripSchedule 리스트 추가
-                        log.info("존재하는 여행 일정 정보 : {}", groupInfo.getTripScheduleList().getFirst().getTripScheduleName()); // 해당 여행 일정 이름 출력
+                        log.info("여행 일정 첫날 일자 및 장소 이름 정보 : {} {}", groupInfo.getTripScheduleList().getFirst().getTripScheduleDetails().getFirst().getDate(),
+                                groupInfo.getTripScheduleList().getFirst().getTripScheduleDetails().getFirst().getLocationInfo().getFirst().getLocationName());
+                    } else {
+                        log.info("여행 일정이 존재하지 않습니다.");
                     }
                 }
             } else {
-                log.info("Group List is null");
+                log.info("그룹이 존재하지 않습니다.");
             }
 
             return ResponseEntity.ok(loginUser); // 로그인 성공
@@ -194,7 +203,7 @@ public class AndroidController {
         return ResponseEntity.ok(request.getUserInfo());
     }
 
-    // 여행 일정 삭제
+    /*// 여행 일정 삭제
     @PostMapping("/api/TripScheduleDelete")
     public ResponseEntity<UserInfo> tripDelete(@RequestBody DeleteTripScheduleRequest request) throws Exception {
         User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
@@ -207,12 +216,12 @@ public class AndroidController {
         for (GroupInfo group : updateUser.getGroupList()) {
             System.out.println("Group: " + group.getGroupName());
             for (TripScheduleInfo tripSchedule : group.getTripScheduleList()) {
-                log.info("tripDelete 후 업데이트된 UserInfo의 TripScheduleName: {}", tripSchedule.getTripScheduleName());
+                log.info("tripDelete 후 업데이트된 UserInfo의 TripScheduleStartDate: {}", tripSchedule.getStartDate());
             }
         }
 
         return ResponseEntity.ok(updateUser);
-    }
+    }*/
 
     // 난수 생성 함수
     public String randomNumber() {

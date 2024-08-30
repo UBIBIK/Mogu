@@ -49,7 +49,7 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
         }
 
         // 하위 컬렉션에 여행 일정 저장
-        ApiFuture<WriteResult> resultApiFuture = groupSchedules.document(tripSchedule.getTripScheduleName()).set(tripSchedule);
+        ApiFuture<WriteResult> resultApiFuture = groupSchedules.document().set(tripSchedule);
         return tripSchedule;
     }
 
@@ -75,13 +75,13 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
         ApiFuture<WriteResult> future = firestore.collection(COLLECTION_NAME)
                 .document(tripSchedule.getGroupKey())
                 .collection("tripSchedule")
-                .document(tripSchedule.getTripScheduleName())
+                .document()
                 .set(tripSchedule);
 
         return future.get().getUpdateTime().toString();
     }
 
-    public UserInfo deleteTripSchedule(String deleteTripScheduleName, String deleteGroupKey, UserInfo user) throws Exception {
+    /*public UserInfo deleteTripSchedule(String deleteTripScheduleName, String deleteGroupKey, UserInfo user) throws Exception {
         // groupKey에 해당하는 그룹에서 서브컬렉션인 tripSchedule 문서를 가져옴
         CollectionReference tripScheduleCollection = firestore.collection(COLLECTION_NAME)
                 .document(deleteGroupKey)
@@ -109,7 +109,7 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
                 Iterator<TripScheduleInfo> iterator = group.getTripScheduleList().iterator();
                 while (iterator.hasNext()) {
                     TripScheduleInfo tripSchedule = iterator.next();
-                    if (tripSchedule.getTripScheduleName().equals(deleteTripScheduleName)) {
+                    if (tripSchedule.getTripScheduleDetails().removeIf(equals())).equals(deleteTripScheduleName)) {
                         iterator.remove();
                         break;
                     }
@@ -117,5 +117,5 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
             }
         }
         return user;
-    }
+    }*/
 }

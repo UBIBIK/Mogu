@@ -1,21 +1,17 @@
 package mogu.server.mokpowa.dto.GroupRequest;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mogu.server.mokpowa.dto.UserInfo;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DeleteGroupMemberRequest {
     private UserInfo userInfo;
     private String groupName;
     private String deleteMemberEmail;
-
-    public DeleteGroupMemberRequest() {}
-
-    public DeleteGroupMemberRequest(UserInfo userInfo, String groupName, String deleteMemberEmail) {
-        this.userInfo = userInfo;
-        this.groupName = groupName;
-        this.deleteMemberEmail = getDeleteMemberEmail();
-    }
 }

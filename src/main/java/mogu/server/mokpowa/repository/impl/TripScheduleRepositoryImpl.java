@@ -20,9 +20,9 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
     Firestore firestore = FirestoreClient.getFirestore();
 
     @Override
-    public void checkGroupMembership(UserInfo user, TripSchedule trip) {
+    public void checkGroupMembership(UserInfo user, TripScheduleInfo tripScheduleInfo) {
         boolean isMember = user.getGroupList().stream()
-                .anyMatch(group -> group.getGroupKey().equals(trip.getGroupKey()));
+                .anyMatch(group -> group.getGroupKey().equals(tripScheduleInfo.getGroupKey()));
 
         if (!isMember) {
             throw new IllegalArgumentException("가입된 그룹이 아닙니다.");
@@ -30,16 +30,16 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
     }
 
     @Override
-    public TripSchedule insertTripSchedule(TripSchedule tripSchedule, UserInfo user) throws Exception {
-        if (tripSchedule == null) {
+    public TripScheduleInfo insertTripSchedule(TripScheduleInfo tripScheduleInfo, UserInfo user) throws Exception {
+        if (tripScheduleInfo == null) {
             throw new IllegalArgumentException("trip 객체가 null입니다.");
         }
 
-        checkGroupMembership(user, tripSchedule);
+        checkGroupMembership(user, tripScheduleInfo);
 
         // 그룹 컬렉션 내의 하위 컬렉션에서 여행 일정이 존재하는지 확인하여 있을 경우 예외처리
         CollectionReference groupSchedules = firestore.collection(COLLECTION_NAME)
-                .document(tripSchedule.getGroupKey())
+                .document(tripScheduleInfo.getGroupKey())
                 .collection("tripSchedule");
         ApiFuture<QuerySnapshot> future = groupSchedules.get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
@@ -49,8 +49,8 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
         }
 
         // 하위 컬렉션에 여행 일정 저장
-        ApiFuture<WriteResult> resultApiFuture = groupSchedules.document().set(tripSchedule);
-        return tripSchedule;
+        ApiFuture<WriteResult> resultApiFuture = groupSchedules.document().set(tripScheduleInfo);
+        return tripScheduleInfo;
     }
 
     @Override

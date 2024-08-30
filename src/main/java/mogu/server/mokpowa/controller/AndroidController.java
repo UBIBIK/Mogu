@@ -197,9 +197,9 @@ public class AndroidController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 사용자 정보가 올바르지 않습니다.
         }
 
-        TripSchedule insertTrip = tripScheduleRepository.insertTripSchedule((TripSchedule) request.getTripScheduleInfo(), request.getUserInfo());
+        TripScheduleInfo insertTripInfo = tripScheduleRepository.insertTripSchedule(request.getTripScheduleInfo(), request.getUserInfo());
         // 생성된 trip을 userInfo에 업데이트하여 반환
-        request.getUserInfo().getGroupList().getFirst().getTripScheduleList().add(insertTrip);
+        request.getUserInfo().getGroupList().getFirst().getTripScheduleList().add(insertTripInfo);
         return ResponseEntity.ok(request.getUserInfo());
     }
 

@@ -2,6 +2,7 @@ package mogu.server.mokpowa;
 
 import mogu.server.mokpowa.controller.AndroidController;
 import mogu.server.mokpowa.dto.LocationInfo;
+import mogu.server.mokpowa.dto.TripScheduleInfo;
 import mogu.server.mokpowa.dto.TripScheduleRequest.CreateTripScheduleRequest;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.TripSchedule;
@@ -64,21 +65,21 @@ public class UserControllerTest {
         UserInfo userInfo = response.getBody();
 
         // 테스트 여행 일정 생성
-        TripSchedule tripSchedule =
+        TripScheduleInfo tripScheduleInfo =
                 new TripSchedule(TEST_GROUP_KEY,
                         LocalDate.of(2024,8,7),
                         LocalDate.of(2024,8,8));
-        tripSchedule.getTripScheduleDetails().getFirst().getLocationInfo().addFirst(
+        tripScheduleInfo.getTripScheduleDetails().getFirst().getLocationInfo().addFirst(
                 new LocationInfo("갓바위 문화타운", "전라남도 목포시 남농로 135", 34.79841, 126.3693527, "첫번째 일정")
         );
-        tripSchedule.getTripScheduleDetails().getFirst().getLocationInfo().add(1,
+        tripScheduleInfo.getTripScheduleDetails().getFirst().getLocationInfo().add(1,
                 new LocationInfo("목포 올레", "전라남도 목포시 열린길 18", 34.7927524, 126.3760479, "두번째 일정")
         );
-        tripSchedule.getTripScheduleDetails().getLast().getLocationInfo().addFirst(
+        tripScheduleInfo.getTripScheduleDetails().getLast().getLocationInfo().addFirst(
                 new LocationInfo("고하도 전망대", "전라남도 목포시 고하도안길 234", 34.7779928, 126.3591099, "세번째 일정")
         );
 
-        CreateTripScheduleRequest request = new CreateTripScheduleRequest(userInfo, tripSchedule);
+        CreateTripScheduleRequest request = new CreateTripScheduleRequest(userInfo, tripScheduleInfo);
 
         // 여행 일정 생성
         ResponseEntity<UserInfo> response2 = androidController.tripCreate(request);

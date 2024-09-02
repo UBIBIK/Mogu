@@ -3,7 +3,6 @@ package mogu.server.mokpowa.RepositoryTest;
 import mogu.server.mokpowa.controller.AndroidController;
 import mogu.server.mokpowa.dto.LocationInfo;
 import mogu.server.mokpowa.dto.TripScheduleInfo;
-import mogu.server.mokpowa.dto.TripScheduleRequest.DeleteTripScheduleRequest;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.entity.TripSchedule;
@@ -11,12 +10,8 @@ import mogu.server.mokpowa.repository.TripScheduleRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 public class TripScheduleRepositoryTest {
@@ -64,14 +59,14 @@ public class TripScheduleRepositoryTest {
         System.out.println(tripSchedule.getTripScheduleDetails().getFirst().getLocationInfo().getFirst().getLocationName());
     }
 
-    @Test
+    /*@Test
     public void updateTripScheduleTest() throws Exception {
         TripSchedule updateTrip =
                 tripScheduleRepository.getTripScheduleDetails(TEST_GROUP_KEY);
         updateTrip.getTripScheduleDetails().getFirst().getLocationInfo().getFirst().
                 setLocationName("제주도해녀라면");
         tripScheduleRepository.updateTripSchedule(updateTrip);
-    }
+    }*/
 
     /*@Test
     public void deleteTripScheduleTest() throws Exception {

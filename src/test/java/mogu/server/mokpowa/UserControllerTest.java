@@ -4,6 +4,7 @@ import mogu.server.mokpowa.controller.AndroidController;
 import mogu.server.mokpowa.dto.LocationInfo;
 import mogu.server.mokpowa.dto.TripScheduleInfo;
 import mogu.server.mokpowa.dto.TripScheduleRequest.CreateTripScheduleRequest;
+import mogu.server.mokpowa.dto.TripScheduleRequest.DeleteTripScheduleRequest;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.TripSchedule;
 import org.junit.jupiter.api.Test;
@@ -18,8 +19,6 @@ import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -88,5 +87,21 @@ public class UserControllerTest {
         // 결과 검증
         assert updatedUser != null;
         System.out.println(updatedUser.getGroupList().getFirst().getTripScheduleList().getFirst().getTripScheduleDetails().getFirst().getLocationInfo().getFirst().getAddress());
+    }
+
+    @Test
+    public void testTripDelete() throws Exception {
+        UserInfo loginUser = new UserInfo();
+        loginUser.setUserEmail(TEST_GROUP_MEMBER_EMAIL);
+        loginUser.setPassword(TEST_GROUP_MEMBER_PASSWORD);
+
+        // 로그인 사용자 정보 받아오기
+        ResponseEntity<UserInfo> response = androidController.loginUser(loginUser);
+        UserInfo userInfo = response.getBody();
+
+        DeleteTripScheduleRequest request = new DeleteTripScheduleRequest(userInfo, TEST_GROUP_KEY);
+
+        ResponseEntity<UserInfo> response2 = androidController.tripDelete(request);
+        UserInfo updatedUser = response2.getBody();
     }
 }

@@ -14,5 +14,5 @@ public class LocationInfo {
     private String address; // 도로명 주소
     private Double latitude; // 장소 위도 추후 수정 가능
     private Double longitude; // 장소 경도 추후 수정 가능
-    private String note; // 메모
+    private String note; // 일자별 메모
 }

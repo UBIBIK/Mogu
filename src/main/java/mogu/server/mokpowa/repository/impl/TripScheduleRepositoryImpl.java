@@ -10,9 +10,7 @@ import mogu.server.mokpowa.entity.TripSchedule;
 import mogu.server.mokpowa.repository.TripScheduleRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class TripScheduleRepositoryImpl implements TripScheduleRepository {
@@ -70,18 +68,19 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
         }
     }
 
-    @Override
-    public String updateTripSchedule(TripSchedule tripSchedule) throws Exception {
+    /*@Override
+    public UserInfo updateTripSchedule(TripSchedule tripSchedule, UserInfo user) throws Exception {
+        user.getGroupList().
         ApiFuture<WriteResult> future = firestore.collection(COLLECTION_NAME)
                 .document(tripSchedule.getGroupKey())
                 .collection("tripSchedule")
                 .document()
                 .set(tripSchedule);
 
-        return future.get().getUpdateTime().toString();
-    }
+        return ;
+    }*/
 
-    /*public UserInfo deleteTripSchedule(String deleteTripScheduleName, String deleteGroupKey, UserInfo user) throws Exception {
+    public UserInfo deleteTripSchedule(String deleteGroupKey, UserInfo user) throws Exception {
         // groupKey에 해당하는 그룹에서 서브컬렉션인 tripSchedule 문서를 가져옴
         CollectionReference tripScheduleCollection = firestore.collection(COLLECTION_NAME)
                 .document(deleteGroupKey)
@@ -96,26 +95,18 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
         }
 
         // 여행 일정 삭제
-        for (QueryDocumentSnapshot document : documents) {
-            if (Objects.equals(document.getString("tripScheduleName"), deleteTripScheduleName)) {
-                document.getReference().delete();
-                break;
-            }
+        for(QueryDocumentSnapshot document : documents) {
+            ApiFuture<WriteResult> writeResult = document.getReference().delete();
+            writeResult.get();
         }
 
         // userInfo에서 해당하는 TripScheduleInfo 삭제
         for (GroupInfo group : user.getGroupList()) {
             if (group.getGroupKey().equals(deleteGroupKey)) {
-                Iterator<TripScheduleInfo> iterator = group.getTripScheduleList().iterator();
-                while (iterator.hasNext()) {
-                    TripScheduleInfo tripSchedule = iterator.next();
-                    if (tripSchedule.getTripScheduleDetails().removeIf(equals())).equals(deleteTripScheduleName)) {
-                        iterator.remove();
-                        break;
-                    }
-                }
+                group.getTripScheduleList().set(0, null);
+                break;
             }
         }
         return user;
-    }*/
+    }
 }

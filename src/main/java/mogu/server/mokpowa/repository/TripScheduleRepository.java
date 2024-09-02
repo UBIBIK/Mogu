@@ -11,7 +11,7 @@ public interface TripScheduleRepository {
     
     TripSchedule getTripScheduleDetails(String groupKey) throws Exception; // 여행 일정 조회
 
-    String updateTripSchedule(TripSchedule tripSchedule) throws Exception; // 여행 일정 정보 수정
+//    UserInfo updateTripSchedule(TripSchedule tripSchedule, UserInfo user) throws Exception; // 여행 일정 정보 수정
 
-//    UserInfo deleteTripSchedule(String deleteTripSchedule, String deleteGroupKey, UserInfo user) throws Exception; // 여행 일정 삭제
+    UserInfo deleteTripSchedule(String deleteGroupKey, UserInfo user) throws Exception; // 여행 일정 삭제
 }

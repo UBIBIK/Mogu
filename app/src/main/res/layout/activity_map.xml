@@ -77,7 +77,7 @@
                     android:id="@+id/recyclerViewPlaces"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="400"
+                    android:layout_weight="1"
                     android:orientation="vertical" />
 
                 <!-- 버튼들을 수평으로 배치하는 LinearLayout -->
@@ -121,14 +121,11 @@
         </LinearLayout>
     </FrameLayout>
 
-
-
+    <!-- 프래그먼트 컨테이너 -->
     <FrameLayout
         android:id="@+id/mapContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        app:layout_anchor="@+id/frameLayout"
-        app:layout_anchorGravity="center" />
+        android:layout_gravity="center" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

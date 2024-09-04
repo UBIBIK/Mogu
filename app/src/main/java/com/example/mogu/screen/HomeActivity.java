@@ -17,6 +17,7 @@ public class HomeActivity extends AppCompatActivity {
 
         findViewById(R.id.HomeButton).setOnClickListener(v -> replaceFragment(new HomeFragment()));
         findViewById(R.id.GroupButton).setOnClickListener(v -> replaceFragment(new GroupFragment()));
+        findViewById(R.id.MapButton).setOnClickListener(v -> replaceFragment(new MapFragment()));
 
         // 초기 화면 설정
         if (savedInstanceState == null) {

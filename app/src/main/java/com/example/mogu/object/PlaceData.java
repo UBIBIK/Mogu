@@ -55,14 +55,6 @@ public class PlaceData implements Parcelable {
         this.notes.add(note);
     }
 
-    /**
-     * 장소 정보를 수정하는 메서드
-     *
-     * @param index     수정할 장소의 인덱스
-     * @param placeName 새로운 장소 이름
-     * @param location  새로운 위치
-     * @param note      새로운 메모
-     */
     public void updatePlace(int index, String placeName, LatLng location, String note) {
         if (index >= 0 && index < placeNames.size()) {
             this.placeNames.set(index, placeName);
@@ -109,7 +101,7 @@ public class PlaceData implements Parcelable {
         this.notes.set(index, note);
     }
 
-    // LocationInfo 리스트 반환 메서드 추가
+    // LocationInfo 리스트를 반환하는 메서드
     public List<LocationInfo> getLocationInfoList() {
         List<LocationInfo> locationInfoList = new ArrayList<>();
 
@@ -120,7 +112,7 @@ public class PlaceData implements Parcelable {
 
             LocationInfo locationInfo = new LocationInfo(
                     placeName,
-                    "Address", // 만약 주소를 추가로 받아오거나 관리할 경우 이 부분을 수정합니다.
+                    "Address", // 실제 주소를 관리할 경우 이 부분을 수정합니다.
                     location.latitude,
                     location.longitude,
                     note
@@ -129,5 +121,18 @@ public class PlaceData implements Parcelable {
         }
 
         return locationInfoList;
+    }
+
+    // LocationInfo 리스트를 받아 PlaceData를 설정하는 메서드
+    public void setLocationInfoList(List<LocationInfo> locationInfoList) {
+        placeNames.clear();
+        locations.clear();
+        notes.clear();
+
+        for (LocationInfo locationInfo : locationInfoList) {
+            placeNames.add(locationInfo.getLocationName());
+            locations.add(new LatLng(locationInfo.getLatitude(), locationInfo.getLongitude()));
+            notes.add(locationInfo.getNote());
+        }
     }
 }

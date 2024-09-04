@@ -4,12 +4,15 @@ import com.example.mogu.object.CreateGroupRequest;
 import com.example.mogu.object.CreateTripScheduleRequest;
 import com.example.mogu.object.DeleteGroupMemberRequest;
 import com.example.mogu.object.JoinGroupRequest;
+import com.example.mogu.object.TripScheduleInfo;
 import com.example.mogu.object.UserInfo;
 import com.example.mogu.object.DeleteGroupRequest;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface ApiService {
     @POST("/api/signup")
@@ -32,4 +35,8 @@ public interface ApiService {
 
     @POST("/api/TripScheduleCreate")
     Call<UserInfo> createTripSchedule(@Body CreateTripScheduleRequest request);
+
+    @POST("/api/getTripSchedule")
+    Call<TripScheduleInfo> getTripSchedule(@Body String groupKey);
+
 }

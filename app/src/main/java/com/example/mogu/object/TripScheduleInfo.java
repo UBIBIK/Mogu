@@ -1,6 +1,7 @@
 package com.example.mogu.object;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -55,6 +56,19 @@ public class TripScheduleInfo {
     public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
+
+    public long getStartDateMillis() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(startDate, formatter);
+        return localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000;
+    }
+
+    public long getEndDateMillis() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(endDate, formatter);
+        return localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond() * 1000;
+    }
+
 
     // 내부 메서드: 일정 세부 정보를 생성하는 메서드
     private void generateTripDetails(LocalDate startDate, LocalDate endDate) {

@@ -14,6 +14,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mogu.R;
+import com.example.mogu.object.GroupInfo;
+import com.example.mogu.object.UserInfo;
+import com.example.mogu.share.SharedPreferencesHelper;
 
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -26,11 +29,15 @@ public class CalendarActivity extends AppCompatActivity {
     private Calendar firstSelectedDate = null;
     private Calendar secondSelectedDate = null;
     private String groupKey;  // groupKey를 저장할 변수
+    private SharedPreferencesHelper sharedPreferencesHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calendar);
+
+        // SharedPreferencesHelper 초기화
+        sharedPreferencesHelper = new SharedPreferencesHelper(this);
 
         // Intent로부터 groupKey를 가져옴
         groupKey = getIntent().getStringExtra("group_key");
@@ -54,12 +61,8 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView1.setMinDate(todayMillis); // 오늘 날짜 이후만 선택 가능
         calendarView2.setMinDate(todayMillis); // 오늘 날짜 이후만 선택 가능
 
-        // 기본적으로 오늘 날짜를 선택하도록 설정
-        calendarView1.setDate(todayMillis);
-        calendarView2.setDate(todayMillis);
-
-        firstSelectedDate = (Calendar) today.clone();
-        secondSelectedDate = (Calendar) today.clone();
+        // 사용자 정보에서 일정 데이터를 가져와서 설정
+        loadAndSetUserSchedule(groupKey, today);
 
         calendarView1.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -106,9 +109,6 @@ public class CalendarActivity extends AppCompatActivity {
                         @SuppressLint("DefaultLocale") String formattedEndDate = String.format("%d년 %d월 %d일", secondSelectedDate.get(Calendar.YEAR),
                                 secondSelectedDate.get(Calendar.MONTH) + 1, secondSelectedDate.get(Calendar.DAY_OF_MONTH));
 
-                        // 로그 출력
-                        Log.d("CalendarActivity", "선택한 여행 기간: " + formattedStartDate + " ~ " + formattedEndDate + ", 총 " + duration + "일");
-
                         // 선택한 날짜와 기간을 Intent에 담아 MapActivity로 전달
                         Intent intent = new Intent(CalendarActivity.this, MapActivity.class);
                         intent.putExtra("startDate", startMillis);
@@ -118,12 +118,62 @@ public class CalendarActivity extends AppCompatActivity {
                         intent.putExtra("formattedEndDate", formattedEndDate);
                         intent.putExtra("group_key", groupKey); // groupKey를 Intent에 추가
                         startActivity(intent);
+
+                        // CalendarActivity 종료
+                        finish();
                     }
                 } else {
                     Toast.makeText(CalendarActivity.this, "날짜를 선택해주세요.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+    }
+
+    private void loadAndSetUserSchedule(String groupKey, Calendar today) {
+        // SharedPreferences에서 UserInfo 가져오기
+        UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+        if (userInfo != null) {
+            // 해당 그룹의 일정 정보 찾기
+            GroupInfo selectedGroup = null;
+            for (GroupInfo group : userInfo.getGroupList()) {
+                if (group.getGroupKey().equals(groupKey)) {
+                    selectedGroup = group;
+                    break;
+                }
+            }
+
+            if (selectedGroup != null && !selectedGroup.getTripScheduleList().isEmpty()) {
+                long startMillis = selectedGroup.getStartDateMillis();
+                long endMillis = selectedGroup.getEndDateMillis();
+
+                // 달력에 날짜 표시
+                calendarView1.setDate(startMillis);
+                calendarView2.setDate(endMillis);
+
+                firstSelectedDate = Calendar.getInstance();
+                firstSelectedDate.setTimeInMillis(startMillis);
+
+                secondSelectedDate = Calendar.getInstance();
+                secondSelectedDate.setTimeInMillis(endMillis);
+            } else {
+                // 일정이 없으면 오늘 날짜로 설정
+                calendarView1.setDate(today.getTimeInMillis());
+                calendarView2.setDate(today.getTimeInMillis());
+
+                firstSelectedDate = (Calendar) today.clone();
+                secondSelectedDate = (Calendar) today.clone();
+            }
+        } else {
+            Toast.makeText(this, "사용자 정보 로드 실패", Toast.LENGTH_SHORT).show();
+            // 일정이 없으면 오늘 날짜로 설정
+            calendarView1.setDate(today.getTimeInMillis());
+            calendarView2.setDate(today.getTimeInMillis());
+
+            firstSelectedDate = (Calendar) today.clone();
+            secondSelectedDate = (Calendar) today.clone();
+        }
+
+        updateSelectedDatesDisplay(); // 선택된 날짜를 갱신하여 화면에 표시
     }
 
     @SuppressLint("SetTextI18n")

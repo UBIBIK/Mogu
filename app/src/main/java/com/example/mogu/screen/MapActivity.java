@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mogu.R;
 import com.example.mogu.custom.PlaceDataAdapter;
 import com.example.mogu.object.CreateTripScheduleRequest;
+import com.example.mogu.object.GroupInfo;
 import com.example.mogu.object.LocationInfo;
 import com.example.mogu.object.PlaceData;
 import com.example.mogu.object.TripScheduleDetails;
@@ -104,12 +105,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Map<String, PlaceData> placesMap = new HashMap<>();
     private long startMillis;
     private long endMillis;
+    private SharedPreferencesHelper sharedPreferencesHelper;
 
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        // SharedPreferencesHelper 초기화
+        sharedPreferencesHelper = new SharedPreferencesHelper(this);
 
         // Intent에서 시작일과 종료일을 가져옴
         Bundle extras = getIntent().getExtras();
@@ -172,6 +177,39 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // 지도 뷰 초기화
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+
+        // 저장된 장소 데이터를 불러와서 설정
+        loadExistingPlaceData();
+    }
+
+    // 기존에 저장된 장소 데이터를 불러와서 설정하는 메서드
+    private void loadExistingPlaceData() {
+        UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+
+        if (userInfo != null) {
+            for (GroupInfo group : userInfo.getGroupList()) {
+                if (group.getTripScheduleList() != null && !group.getTripScheduleList().isEmpty()) {
+                    TripScheduleInfo tripSchedule = group.getTripScheduleList().get(0); // 첫 번째 TripSchedule 가져옴
+                    for (TripScheduleDetails details : tripSchedule.getTripScheduleDetails()) {
+                        PlaceData placeData = new PlaceData();
+                        placeData.setLocationInfoList(details.getLocationInfo());
+
+                        placesMap.put(details.getDay(), placeData);
+
+                        // 로그 출력
+                        Log.d(TAG, "Loaded PlaceData for " + details.getDay() + ": " + placeData.toString());
+                    }
+                }
+            }
+        } else {
+            Log.e(TAG, "UserInfo not found in SharedPreferences");
+        }
+
+        // 첫 번째 DAY를 기본으로 설정
+        if (dateInfoLayout.getChildCount() > 0) {
+            Button firstDayButton = (Button) dateInfoLayout.getChildAt(0);
+            selectDayButton(firstDayButton);
+        }
     }
 
     @Override
@@ -283,6 +321,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // 일정 저장 버튼 클릭 리스너 설정
         saveButton.setOnClickListener(view -> {
             saveTripSchedule(); // 일정 저장 메서드 호출
+            moveToHomeMap();
         });
     }
 
@@ -564,4 +603,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         });
     }
+
+    private void moveToHomeMap() {
+        // 현재 MapActivity를 종료하여 이전 액티비티로 돌아가기
+        finish();
+    }
+
+
 }

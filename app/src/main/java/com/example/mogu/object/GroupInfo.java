@@ -1,6 +1,10 @@
 package com.example.mogu.object;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GroupInfo {
     private String groupName;
@@ -31,6 +35,41 @@ public class GroupInfo {
 
     public ArrayList<TripScheduleInfo> getTripScheduleList() {
         return tripScheduleList;
+    }
+
+    public Map<String, PlaceData> getPlacesMap() {
+        // TripScheduleInfo에서 장소 데이터를 수집하여 맵으로 반환
+        Map<String, PlaceData> placesMap = new HashMap<>();
+        if (tripScheduleList != null && !tripScheduleList.isEmpty()) {
+            // 첫 번째 일정의 장소를 반환
+            TripScheduleInfo tripScheduleInfo = tripScheduleList.get(0);
+            for (TripScheduleDetails details : tripScheduleInfo.getTripScheduleDetails()) {
+                PlaceData placeData = new PlaceData(); // Create a new PlaceData object
+                for (LocationInfo locationInfo : details.getLocationInfo()) {
+                    // Add each LocationInfo to PlaceData
+                    LatLng latLng = new LatLng(locationInfo.getLatitude(), locationInfo.getLongitude());
+                    placeData.addPlace(locationInfo.getLocationName(), latLng, locationInfo.getNote());
+                }
+                placesMap.put(details.getDay(), placeData);
+            }
+        }
+        return placesMap;
+    }
+
+
+
+    public long getStartDateMillis() {
+        if (tripScheduleList != null && !tripScheduleList.isEmpty()) {
+            return tripScheduleList.get(0).getStartDateMillis();
+        }
+        return 0;  // 기본값으로 0 반환
+    }
+
+    public long getEndDateMillis() {
+        if (tripScheduleList != null && !tripScheduleList.isEmpty()) {
+            return tripScheduleList.get(0).getEndDateMillis();
+        }
+        return 0;  // 기본값으로 0 반환
     }
 
     public void setTripScheduleList(ArrayList<TripScheduleInfo> tripScheduleList) {

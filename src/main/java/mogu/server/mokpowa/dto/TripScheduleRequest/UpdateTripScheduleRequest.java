@@ -11,7 +11,6 @@ import mogu.server.mokpowa.dto.UserInfo;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class UpdateTripScheduleRequest {
     private UserInfo userInfo;
     private TripScheduleInfo tripScheduleInfo;

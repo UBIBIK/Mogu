@@ -28,7 +28,7 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
     }
 
     @Override
-    public TripScheduleInfo insertTripSchedule(TripScheduleInfo tripScheduleInfo, UserInfo user) throws Exception {
+    public UserInfo insertTripSchedule(TripScheduleInfo tripScheduleInfo, UserInfo user) throws Exception {
         if (tripScheduleInfo == null) {
             throw new IllegalArgumentException("trip 객체가 null입니다.");
         }
@@ -47,18 +47,25 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
         }
 
         // 하위 컬렉션에 여행 일정 저장
-        ApiFuture<WriteResult> resultApiFuture = groupSchedules.document().set(tripScheduleInfo);
-        return tripScheduleInfo;
+        ApiFuture<WriteResult> resultApiFuture = groupSchedules.document(tripScheduleInfo.getGroupKey()).set(tripScheduleInfo);
+
+        // 생성된 여행 일정을 userInfo에 업데이트하여 반환
+        for (GroupInfo groupInfo : user.getGroupList()) {
+            if(groupInfo.getGroupKey().equals(tripScheduleInfo.getGroupKey())) {
+                groupInfo.getTripScheduleList().add(tripScheduleInfo);
+            }
+        }
+        return user;
     }
 
     @Override
     public TripSchedule getTripScheduleDetails(String groupKey) throws Exception {
         // 그룹 컬렉션 내의 하위 컬렉션에서 여행 일정을 조회
-        CollectionReference groupSchedules = firestore.collection("groups")
+        CollectionReference tripSchedules = firestore.collection(COLLECTION_NAME)
                 .document(groupKey)
                 .collection("tripSchedule");
 
-        ApiFuture<QuerySnapshot> querySnapshot = groupSchedules.get();
+        ApiFuture<QuerySnapshot> querySnapshot = tripSchedules.get();
         List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
 
         if (!documents.isEmpty()) {
@@ -68,17 +75,34 @@ public class TripScheduleRepositoryImpl implements TripScheduleRepository {
         }
     }
 
-    /*@Override
-    public UserInfo updateTripSchedule(TripSchedule tripSchedule, UserInfo user) throws Exception {
-        user.getGroupList().
-        ApiFuture<WriteResult> future = firestore.collection(COLLECTION_NAME)
+    @Override
+    public UserInfo updateTripSchedule(TripScheduleInfo tripSchedule, UserInfo user) throws Exception {
+        // groupKey에 해당하는 그룹에서 서브컬렉션인 tripSchedule 문서를 가져옴
+        CollectionReference tripScheduleCollection = firestore.collection(COLLECTION_NAME)
                 .document(tripSchedule.getGroupKey())
-                .collection("tripSchedule")
-                .document()
-                .set(tripSchedule);
+                .collection("tripSchedule");
 
-        return ;
-    }*/
+        // 여행 일정이 존재하는지 확인
+        ApiFuture<QuerySnapshot> querySnapshot = tripScheduleCollection.get();
+        List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
+
+        if (documents.isEmpty()) {
+            throw new Exception("해당 그룹의 여행 일정이 존재하지 않습니다.");
+        }
+
+        // 해당 TripSchedule 업데이트
+        ApiFuture<WriteResult> writeResult =
+                tripScheduleCollection.document(tripSchedule.getGroupKey()).set(tripSchedule);
+        writeResult.get();
+
+        // userInfo에 해당 여행 일정 업데이트 후 반환
+        for (GroupInfo group : user.getGroupList()) {
+            if (group.getGroupKey().equals(tripSchedule.getGroupKey())) {
+                group.getTripScheduleList().set(0, tripSchedule);
+            }
+        }
+        return user;
+    }
 
     public UserInfo deleteTripSchedule(String deleteGroupKey, UserInfo user) throws Exception {
         // groupKey에 해당하는 그룹에서 서브컬렉션인 tripSchedule 문서를 가져옴

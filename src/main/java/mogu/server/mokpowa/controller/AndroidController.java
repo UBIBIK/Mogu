@@ -10,6 +10,7 @@ import mogu.server.mokpowa.dto.GroupRequest.JoinGroupRequest;
 import mogu.server.mokpowa.dto.TripScheduleInfo;
 import mogu.server.mokpowa.dto.TripScheduleRequest.CreateTripScheduleRequest;
 import mogu.server.mokpowa.dto.TripScheduleRequest.DeleteTripScheduleRequest;
+import mogu.server.mokpowa.dto.TripScheduleRequest.UpdateTripScheduleRequest;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.entity.TripSchedule;
@@ -189,62 +190,104 @@ public class AndroidController {
         return ResponseEntity.ok(updatedUserInfo);
     }
 
+    // 사용자 정보 검증 메서드
+    private User validateUser(String userEmail) throws Exception {
+        User user = userRepository.getUserDetail(userEmail);
+        if (user == null) {
+            throw new IllegalArgumentException("유효하지 않은 사용자입니다.");
+        }
+        return user;
+    }
+
     // 여행 일정 생성
     @PostMapping("/api/TripScheduleCreate")
-    public ResponseEntity<UserInfo> tripCreate(@RequestBody CreateTripScheduleRequest request) throws Exception {
-        User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
-        if(user == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 사용자 정보가 올바르지 않습니다.
-        }
+    public ResponseEntity<UserInfo> tripCreate(@RequestBody CreateTripScheduleRequest request) {
+        try {
+            // 사용자 정보 검증
+            validateUser(request.getUserInfo().getUserEmail());
 
-        TripScheduleInfo insertTripInfo = tripScheduleRepository.insertTripSchedule(request.getTripScheduleInfo(), request.getUserInfo());
-        // 생성된 trip을 userInfo에 업데이트하여 반환
-        request.getUserInfo().getGroupList().getFirst().getTripScheduleList().add(insertTripInfo);
-        return ResponseEntity.ok(request.getUserInfo());
+            // 여행 일정 추가 및 업데이트
+            UserInfo updateUser = tripScheduleRepository.insertTripSchedule(request.getTripScheduleInfo(), request.getUserInfo());
+
+            if (updateUser == null) {
+                throw new Exception("Failed to insert trip schedule.");
+            }
+
+            // 로그 업데이트
+            logGroupSchedule(updateUser, request.getTripScheduleInfo().getGroupKey(), "tripCreate");
+
+            // 성공 응답: 업데이트된 UserInfo 객체 반환
+            return ResponseEntity.ok(updateUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);  // 사용자 정보 오류 시 null 반환
+        } catch (Exception e) {
+            log.error("Error creating trip schedule", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // 서버 오류 시 null 반환
+        }
     }
+
+
 
     // 여행 일정 삭제
     @PostMapping("/api/TripScheduleDelete")
     public ResponseEntity<UserInfo> tripDelete(@RequestBody DeleteTripScheduleRequest request) {
         try {
-            User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 사용자 정보가 올바르지 않습니다.
-            }
+            // 사용자 정보 검증
+            validateUser(request.getUserInfo().getUserEmail());
 
-            // 해당 여행 일정을 삭제한 userInfo에 업데이트하여 반환
+            // 일정 삭제 후 업데이트
             UserInfo updateUser = tripScheduleRepository.deleteTripSchedule(request.getGroupKey(), request.getUserInfo());
 
-            for (GroupInfo group : updateUser.getGroupList()) {
-                if (group.getGroupKey().equals(request.getGroupKey())) {
-                    if (!group.getTripScheduleList().isEmpty()) {
-                        for (TripScheduleInfo tripSchedule : group.getTripScheduleList()) {
-                            log.info("tripDelete 후 업데이트된 UserInfo의 TripScheduleStartDate: {}", tripSchedule.getStartDate());
-                        }
-                    } else {
-                        log.info("tripDelete 후 업데이트된 UserInfo의 여행 일정이 비어있습니다.");
-                    }
-                    break; // 그룹 일정을 찾았으므로 반복문을 종료
-                }
-            }
+            // 로그 업데이트
+            logGroupSchedule(updateUser, request.getGroupKey(), "tripDelete");
 
             return ResponseEntity.ok(updateUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
             log.error("Error deleting trip schedule", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    /*// 여행 일정 수정
+    // 여행 일정 수정
     @PostMapping("/api/TripScheduleUpdate")
-    public ResponseEntity<UserInfo> tripUpdate(@RequestBody UpdateTripScheduleRequest request) throws Exception {
-        User user = userRepository.getUserDetail(request.getUserInfo().getUserEmail());
-        if(user == null) {
+    public ResponseEntity<UserInfo> tripUpdate(@RequestBody UpdateTripScheduleRequest request) {
+        try {
+            // 사용자 정보 검증
+            validateUser(request.getUserInfo().getUserEmail());
+
+            // 일정 수정 후 업데이트
+            UserInfo updateUser = tripScheduleRepository.updateTripSchedule(request.getTripScheduleInfo(), request.getUserInfo());
+
+            // 로그 업데이트
+            logGroupSchedule(updateUser, request.getTripScheduleInfo().getGroupKey(), "tripUpdate");
+
+            return ResponseEntity.ok(updateUser);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            log.error("Error updating trip schedule", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        // 해당 여행 일정으로 업데이트한 userInfo를 반환
-        UserInfo updateUser = tripScheduleRepository.updateTripSchedule((TripSchedule) request.getTripScheduleInfo(), request.getUserInfo());
-    }*/
+    }
+
+    // 그룹 일정 로깅 메서드
+    private void logGroupSchedule(UserInfo updateUser, String groupKey, String action) {
+        for (GroupInfo group : updateUser.getGroupList()) {
+            if (group.getGroupKey().equals(groupKey)) {
+                if (!group.getTripScheduleList().isEmpty()) {
+                    for (TripScheduleInfo tripSchedule : group.getTripScheduleList()) {
+                        log.info("{} 후 업데이트된 UserInfo의 TripScheduleStartDate: {}",
+                                action, tripSchedule.getStartDate());
+                    }
+                } else {
+                    log.info("{} 후 업데이트된 UserInfo의 여행 일정이 비어있습니다.", action);
+                }
+                break; // 그룹 일정을 찾았으므로 반복문을 종료
+            }
+        }
+    }
 
     // 난수 생성 함수
     public String randomNumber() {

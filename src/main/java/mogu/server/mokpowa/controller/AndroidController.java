@@ -1,6 +1,7 @@
 package mogu.server.mokpowa.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import mogu.server.mokpowa.config.SecurityConfig;
 import mogu.server.mokpowa.dto.GroupInfo;
 import mogu.server.mokpowa.dto.GroupMember;
 import mogu.server.mokpowa.dto.GroupRequest.CreateGroupRequest;
@@ -43,32 +44,41 @@ public class AndroidController {
         this.tripScheduleRepository = tripScheduleRepository;
     }
 
-
     // 회원가입
     @PostMapping("/api/signup")
     @ResponseBody
     public String saveUser(@RequestBody UserInfo user) throws Exception {
-        if(user == null) {
+        if (user == null) {
             return "입력한 정보가 올바르지 않습니다.";
         }
+
         log.info("username={}", user.getUserName());
         log.info("Phone_number={}", user.getPhoneNumber());
         log.info("useremail={}", user.getUserEmail());
 
+        // 비밀번호 해싱 후 저장
+        String hashedPassword = SecurityConfig.encodePassword(user.getPassword());
+        user.setPassword(hashedPassword);
+
         return userRepository.insertUser(user);
     }
 
-    @PostMapping("/login")
+    // 로그인
+    @PostMapping("/api/custom-login")
     @ResponseBody
     public ResponseEntity<UserInfo> loginUser(@RequestBody UserInfo loginUser) throws Exception {
         log.info("입력받은 이메일 = {}", loginUser.getUserEmail());
         log.info("입력받은 비밀번호 = {}", loginUser.getPassword());
 
-        User finduser = userRepository.getUserDetail(loginUser.getUserEmail());
-        if (finduser.getPassword().equals(loginUser.getPassword())) {
-            loginUser.setUserName(finduser.getUserName());
-            loginUser.setPhoneNumber(finduser.getPhoneNumber());
-            loginUser.setGroupList(groupRepository.getJoinGroup(finduser));
+        // 사용자 정보 조회
+        User findUser = userRepository.getUserDetail(loginUser.getUserEmail());
+
+        // 저장된 해시된 비밀번호와 입력한 비밀번호 비교
+        if (SecurityConfig.matches(loginUser.getPassword(), findUser.getPassword())) {
+            loginUser.setUserName(findUser.getUserName());
+            loginUser.setPhoneNumber(findUser.getPhoneNumber());
+            loginUser.setGroupList(groupRepository.getJoinGroup(findUser));
+
             log.info("사용자 로그인 성공 이름 : {}", loginUser.getUserName());
             log.info("전화번호 : {}", loginUser.getPhoneNumber());
 
@@ -85,8 +95,9 @@ public class AndroidController {
                     // 각 그룹별로 TripSchedule 추가
                     TripSchedule tripSchedule = tripScheduleRepository.getTripScheduleDetails(groupInfo.getGroupKey());
                     if (tripSchedule != null) {
-                        groupInfo.getTripScheduleList().add(tripSchedule); // 그룹에 TripSchedule 리스트 추가
-                        log.info("여행 일정 첫날 일자 및 장소 이름 정보 : {} {}", groupInfo.getTripScheduleList().getFirst().getTripScheduleDetails().getFirst().getDate(),
+                        groupInfo.getTripScheduleList().add(tripSchedule);
+                        log.info("여행 일정 첫날 일자 및 장소 이름 정보 : {} {}",
+                                groupInfo.getTripScheduleList().getFirst().getTripScheduleDetails().getFirst().getDate(),
                                 groupInfo.getTripScheduleList().getFirst().getTripScheduleDetails().getFirst().getLocationInfo().getFirst().getLocationName());
                     } else {
                         log.info("여행 일정이 존재하지 않습니다.");
@@ -98,13 +109,12 @@ public class AndroidController {
 
             return ResponseEntity.ok(loginUser); // 로그인 성공
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 잘못된 사용자 정보를 입력했을 경우 로그인 실패
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 비밀번호 불일치로 로그인 실패
         }
     }
 
-
     // 그룹 생성
-    @PostMapping("/group-create")
+    @PostMapping("/api/group-create")
     @ResponseBody
     public ResponseEntity<UserInfo> groupCreate(@RequestBody CreateGroupRequest request) throws Exception {
         if(request.getUserInfo() == null) {
@@ -169,7 +179,6 @@ public class AndroidController {
         return ResponseEntity.ok(updatedUserInfo);
     }
 
-
     // 그룹 멤버 삭제
     @PostMapping("/api/DeleteGroupMember")
     public ResponseEntity<UserInfo> deleteGroupMember(@RequestBody DeleteGroupMemberRequest request) throws Exception {
@@ -225,8 +234,6 @@ public class AndroidController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // 서버 오류 시 null 반환
         }
     }
-
-
 
     // 여행 일정 삭제
     @PostMapping("/api/TripScheduleDelete")

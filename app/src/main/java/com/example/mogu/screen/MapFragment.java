@@ -1,15 +1,7 @@
 package com.example.mogu.screen;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,34 +13,23 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
 import com.example.mogu.custom.PlaceListAdapter;
-import com.example.mogu.object.CreateTripScheduleRequest;
-import com.example.mogu.object.GroupInfo;
 import com.example.mogu.object.PlaceData;
 import com.example.mogu.object.UserInfo;
-import com.example.mogu.retrofit.ApiService;
-import com.example.mogu.retrofit.RetrofitClient;
+import com.example.mogu.object.GroupInfo;
+import com.example.mogu.share.LocationPreference;
 import com.example.mogu.share.SharedPreferencesHelper;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
@@ -59,17 +40,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 public class MapFragment extends Fragment {
 
-    private final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
-    private final String[] locationPermissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-
-    private FusedLocationProviderClient fusedLocationClient;
-    private LatLng startPosition = null;
+    private LatLng currentLocation; // 사용자의 현재 위치
     private ProgressBar progressBar;
     private MapView mapView;
     private GoogleMap googleMap;
@@ -85,10 +58,13 @@ public class MapFragment extends Fragment {
     private RecyclerView recyclerViewPlaces;
     private PlaceListAdapter placeListAdapter;
 
-    private LocationRequest locationRequest;
-    private LocationCallback locationCallback;
-
     private Button selectGroupButton;  // 그룹 선택 버튼
+
+    // 목포의 기본 위치 설정
+    private LatLng defaultLocation = new LatLng(34.8118, 126.3922); // 목포의 위도와 경도
+
+    // 장소 마커 리스트
+    private List<Marker> placeMarkers = new ArrayList<>();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -125,27 +101,6 @@ public class MapFragment extends Fragment {
             placesMap = new HashMap<>();
         }
 
-        // FusedLocationProviderClient 초기화
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
-
-        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000L).build();
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
-                    LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation));
-                }
-            }
-        };
-
-        if (ContextCompat.checkSelfPermission(getContext(), locationPermissions[0]) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(getContext(), locationPermissions[1]) == PackageManager.PERMISSION_GRANTED) {
-            getStartLocation();
-        } else {
-            requestPermissions(locationPermissions, LOCATION_PERMISSION_REQUEST_CODE);
-        }
-
         initializeBottomSheet(view);
         createDayButtons();
 
@@ -154,18 +109,26 @@ public class MapFragment extends Fragment {
             @Override
             public void onMapReady(GoogleMap map) {
                 googleMap = map;
-                if (startPosition != null) {
-                    googleMap.addMarker(new MarkerOptions().position(startPosition).title("Start Position"));
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, 15));
+
+                // 현재 위치가 있으면 마커 추가, 없으면 기본 위치 설정
+                LocationPreference locationPreference = new LocationPreference(getContext());
+                double latitude = locationPreference.getLatitude();
+                double longitude = locationPreference.getLongitude();
+
+                if (latitude != 0.0 && longitude != 0.0) {
+                    currentLocation = new LatLng(latitude, longitude);
+                    googleMap.addMarker(new MarkerOptions().position(currentLocation).title("현재 위치"));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+                } else {
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 15));
                 }
+
                 progressBar.setVisibility(View.GONE);
             }
         });
 
         return view;
     }
-
-
 
     @Override
     public void onResume() {
@@ -177,7 +140,6 @@ public class MapFragment extends Fragment {
     public void onPause() {
         super.onPause();
         mapView.onPause();
-        fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
     @Override
@@ -192,67 +154,13 @@ public class MapFragment extends Fragment {
         mapView.onLowMemory();
     }
 
-    @SuppressLint("MissingPermission")
-    private void getStartLocation() {
-        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-                .addOnSuccessListener(location -> {
-                    if (location != null) {
-                        startPosition = new LatLng(location.getLatitude(), location.getLongitude());
-
-                        if (googleMap != null) {
-                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, 15));
-                        } else {
-                            Log.e("MapFragment", "GoogleMap is not ready yet.");
-                        }
-                    }
-                });
-    }
-
-    @SuppressLint("MissingPermission")
-    private void startLocationUpdates() {
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getStartLocation();
-            } else {
-                showPermissionDeniedDialog();
-            }
-        }
-    }
-
-    private void showPermissionDeniedDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setMessage("위치 권한 거부 시 앱을 사용할 수 없습니다.")
-                .setPositiveButton("권한 설정하러 가기", (dialogInterface, i) -> {
-                    try {
-                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:" + getContext().getPackageName()));
-                        startActivity(intent);
-                    } catch (ActivityNotFoundException e) {
-                        e.printStackTrace();
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
-                        startActivity(intent);
-                    } finally {
-                        requireActivity().finish();
-                    }
-                })
-                .setNegativeButton("앱 종료하기", (dialogInterface, i) -> requireActivity().finish())
-                .setCancelable(false)
-                .show();
-    }
-
     private void initializeBottomSheet(View view) {
-        CoordinatorLayout coordinatorLayout = view.findViewById(R.id.coordinatorLayout);
         FrameLayout bottomSheet = view.findViewById(R.id.bottomSheetContainer);
-
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
+    @SuppressLint({"ResourceType", "UseCompatLoadingForColorStateLists"})
     private void createDayButtons() {
         Calendar startDate = Calendar.getInstance();
         startDate.setTimeInMillis(startMillis);
@@ -290,7 +198,7 @@ public class MapFragment extends Fragment {
         }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint({"ResourceType", "UseCompatLoadingForColorStateLists"})
     private void selectDayButton(Button button) {
         if (selectedDayButton != null) {
             selectedDayButton.setSelected(false);
@@ -307,56 +215,30 @@ public class MapFragment extends Fragment {
         PlaceData placeData = placesMap.get(day);
 
         if (placeData != null) {
-            placeListAdapter = new PlaceListAdapter(placeData.getPlaceName(), placeData.getNotes(), day);
+            // PlaceListAdapter 생성 시 currentLocation 전달 필요 없음
+            placeListAdapter = new PlaceListAdapter(getContext(), placeData.getPlaceName(), placeData.getNotes(), day, placeData.getLocations());
             recyclerViewPlaces.setAdapter(placeListAdapter);
 
             if (googleMap != null) {
-                googleMap.clear(); // 모든 기존 마커를 초기화합니다.
-                addMarkersToMap(placeData); // 장소 마커를 추가합니다.
+                // 장소 마커만 추가, 기존 장소 마커는 제거
+                addMarkersToMap(placeData);
             }
         } else {
-            placeListAdapter = new PlaceListAdapter(new ArrayList<>(), new ArrayList<>(), day);
+            // PlaceListAdapter 생성 시 빈 리스트 사용
+            placeListAdapter = new PlaceListAdapter(getContext(), new ArrayList<>(), new ArrayList<>(), day, new ArrayList<>());
             recyclerViewPlaces.setAdapter(placeListAdapter);
 
             if (googleMap != null) {
-                googleMap.clear(); // 지도에서 모든 마커를 초기화합니다.
+                // 장소 마커만 제거
+                clearPlaceMarkers();
             }
-        }
-
-        // 내 위치를 비동기적으로 가져오고, 가져온 후에 다른 장소 마커와 함께 표시
-        if (fusedLocationClient != null) {
-            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-                    .addOnSuccessListener(location -> {
-                        if (location != null && googleMap != null) {
-                            LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-
-                            // 내 위치 마커를 지도에 추가합니다.
-                            googleMap.addMarker(new MarkerOptions()
-                                    .position(currentLocation)
-                                    .title("내 위치")
-                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-
-                            // 카메라를 내 위치로 이동합니다.
-                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 12));
-
-                            // 장소 마커도 추가합니다.
-                            if (placeData != null) {
-                                addMarkersToMap(placeData); // 장소 마커를 함께 추가
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("MapFragment", "Failed to get current location", e);
-                    });
-        } else {
-            Log.e("MapFragment", "FusedLocationProviderClient is not initialized.");
         }
     }
 
 
-
-
     private void addMarkersToMap(PlaceData placeData) {
+        clearPlaceMarkers(); // 기존 장소 마커만 제거
+
         List<LatLng> locations = placeData.getLocations();
         List<String> placeNames = placeData.getPlaceName();
 
@@ -364,12 +246,22 @@ public class MapFragment extends Fragment {
             LatLng location = locations.get(i);
             String placeName = placeNames.get(i);
 
-            googleMap.addMarker(new MarkerOptions().position(location).title(placeName));
+            // 장소 마커 추가 및 리스트에 저장
+            Marker marker = googleMap.addMarker(new MarkerOptions().position(location).title(placeName));
+            placeMarkers.add(marker); // 장소 마커 리스트에 추가
 
             if (i == 0) {
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 12));
             }
         }
+    }
+
+    private void clearPlaceMarkers() {
+        // 기존의 장소 마커만 삭제
+        for (Marker marker : placeMarkers) {
+            marker.remove();
+        }
+        placeMarkers.clear(); // 리스트 비우기
     }
 
     private long getDateDifference(Calendar startDate, Calendar endDate) {
@@ -378,9 +270,6 @@ public class MapFragment extends Fragment {
     }
 
     private void openGroupSelectionDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("그룹 선택");
-
         SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(getContext());
         UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
         List<String> groupNames = new ArrayList<>();
@@ -390,13 +279,11 @@ public class MapFragment extends Fragment {
 
         String[] groupArray = groupNames.toArray(new String[0]);
 
-        builder.setItems(groupArray, (dialog, which) -> {
-            String selectedGroupName = groupArray[which];
-            loadGroupSchedule(selectedGroupName);
-        });
-
-        builder.setNegativeButton("취소", null);
-        builder.show();
+        new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                .setTitle("그룹 선택")
+                .setItems(groupArray, (dialog, which) -> loadGroupSchedule(groupArray[which]))
+                .setNegativeButton("취소", null)
+                .show();
     }
 
     private void loadGroupSchedule(String groupName) {
@@ -414,34 +301,5 @@ public class MapFragment extends Fragment {
                 break;
             }
         }
-    }
-
-    private void fetchGroupScheduleFromServer(CreateTripScheduleRequest request) {
-        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-        Call<UserInfo> call = apiService.createTripSchedule(request);
-        call.enqueue(new Callback<UserInfo>() {
-            @Override
-            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    UserInfo fetchedUserInfo = response.body();
-                    if (!fetchedUserInfo.getGroupList().isEmpty()) {
-                        GroupInfo fetchedGroup = fetchedUserInfo.getGroupList().get(0);
-                        placesMap = fetchedGroup.getPlacesMap();
-                        startMillis = fetchedGroup.getStartDateMillis();
-                        endMillis = fetchedGroup.getEndDateMillis();
-
-                        createDayButtons();
-                        selectDayButton((Button) dateInfoLayout.getChildAt(0));
-                    }
-                } else {
-                    Log.e("MapFragment", "Failed to fetch group schedule: " + response.message());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<UserInfo> call, Throwable t) {
-                Log.e("MapFragment", "Error fetching group schedule", t);
-            }
-        });
     }
 }

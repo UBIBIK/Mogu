@@ -1,0 +1,55 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"/>
+
+    <!-- 스위치 슬라이드를 버튼 위에 배치하기 위해 FrameLayout 사용 -->
+    <FrameLayout
+        android:id="@+id/overlay_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <!-- 스위치 슬라이드 RecyclerView -->
+
+        <!-- 버튼을 스위치 슬라이드 아래에 표시 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/switchRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="65dp"
+            android:padding="8dp" />
+
+        <LinearLayout
+            android:id="@+id/button_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:layout_gravity="bottom">
+
+            <Button
+                android:id="@+id/btn_shortest"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="최단 경로" />
+
+            <Button
+                android:id="@+id/btn_safest"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="안전 경로" />
+        </LinearLayout>
+
+    </FrameLayout>
+</RelativeLayout>

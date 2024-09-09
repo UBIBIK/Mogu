@@ -142,7 +142,8 @@ public class CalendarActivity extends AppCompatActivity {
                 }
             }
 
-            if (selectedGroup != null && !selectedGroup.getTripScheduleList().isEmpty()) {
+            // selectedGroup과 그 안의 TripScheduleList가 null인지 체크
+            if (selectedGroup != null && selectedGroup.getTripScheduleList() != null && !selectedGroup.getTripScheduleList().isEmpty()) {
                 long startMillis = selectedGroup.getStartDateMillis();
                 long endMillis = selectedGroup.getEndDateMillis();
 
@@ -175,6 +176,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         updateSelectedDatesDisplay(); // 선택된 날짜를 갱신하여 화면에 표시
     }
+
 
     @SuppressLint("SetTextI18n")
     private void updateSelectedDatesDisplay() {

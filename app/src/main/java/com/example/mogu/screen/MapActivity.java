@@ -215,8 +215,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
+
+        // 기본 위치로 지도 초기화
         googleMap.addMarker(new MarkerOptions().position(startPosition).title("목포"));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, 15));
+
+        // 추가적인 지도 설정이나 기능들을 여기서 처리
         progressBar.setVisibility(View.GONE); // 로딩 스피너 숨기기
     }
 
@@ -254,7 +258,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
                         LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+
+                        // GoogleMap 객체가 초기화된 후에만 moveCamera를 호출
+                        if (googleMap != null) {
+                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+                        } else {
+                            Log.e(TAG, "GoogleMap is not ready yet.");
+                        }
                     }
                 });
     }
@@ -586,9 +596,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Call<UserInfo> call = apiService.createTripSchedule(request);
         call.enqueue(new Callback<UserInfo>() {
             @Override
-            public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
+            public void onResponse(@NonNull Call<UserInfo> call, @NonNull Response<UserInfo> response) {
                 if (response.isSuccessful()) {
                     // 서버 요청 성공 시 처리
+                    assert response.body() != null;
+                    sharedPreferencesHelper.saveUserInfo(response.body());
                     Log.d(TAG, "Trip schedule saved successfully.");
                 } else {
                     // 서버 요청 실패 시 처리

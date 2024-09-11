@@ -48,7 +48,7 @@ public class GroupInfo {
                 for (LocationInfo locationInfo : details.getLocationInfo()) {
                     // Add each LocationInfo to PlaceData
                     LatLng latLng = new LatLng(locationInfo.getLatitude(), locationInfo.getLongitude());
-                    placeData.addPlace(locationInfo.getLocationName(), latLng, locationInfo.getNote());
+                    placeData.addPlace(locationInfo.getLocationName(), latLng, locationInfo.getNote(), locationInfo.getImage()); //Todo :이미지 추가
                 }
                 placesMap.put(details.getDay(), placeData);
             }

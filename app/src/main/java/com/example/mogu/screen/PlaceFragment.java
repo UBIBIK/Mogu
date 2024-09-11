@@ -35,7 +35,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 public class PlaceFragment extends Fragment {
 
     // Constants
-    private static final int NUM_OF_ROWS = 10;
+    private static final int NUM_OF_ROWS = 300;
     private static final int PAGE_NO = 1;
     private static final String MOBILE_OS = "AND";
     private static final String MOBILE_APP = "AppTest";
@@ -128,11 +128,10 @@ public class PlaceFragment extends Fragment {
             case 1: return 12;
             case 2: return 14;
             case 3: return 15;
-            case 4: return 25;
-            case 5: return 28;
-            case 6: return 32;
-            case 7: return 38;
-            case 8: return 39;
+            case 4: return 28;
+            case 5: return 32;
+            case 6: return 38;
+            case 7: return 39;
             default: return 0;
         }
     }
@@ -177,6 +176,7 @@ public class PlaceFragment extends Fragment {
                 boolean tagContentid = false;
                 boolean tagMapx = false;
                 boolean tagMapy = false;
+                boolean tagContentTypeId = false;
 
                 String firstimage = "";
                 String title = "";
@@ -185,6 +185,7 @@ public class PlaceFragment extends Fragment {
                 String contentid = "";
                 double mapx = 0.0;
                 double mapy = 0.0;
+                int contentTypeId = 0;
 
                 XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
                 factory.setNamespaceAware(true);
@@ -202,6 +203,7 @@ public class PlaceFragment extends Fragment {
                         if (tagName.equals("contentid")) tagContentid = true;
                         if (tagName.equals("mapx")) tagMapx = true;
                         if (tagName.equals("mapy")) tagMapy = true;
+                        if (tagName.equals("contenttypeid")) tagContentTypeId = true; // 카테고리 ID 태그
                     } else if (eventType == XmlPullParser.TEXT) {
                         if (tagImage) {
                             firstimage = xpp.getText();
@@ -231,10 +233,15 @@ public class PlaceFragment extends Fragment {
                             mapy = Double.parseDouble(xpp.getText());
                             tagMapy = false;
                         }
+                        if (tagContentTypeId) {
+                            contentTypeId = Integer.parseInt(xpp.getText());
+                            tagContentTypeId = false;
+                        }
                     } else if (eventType == XmlPullParser.END_TAG) {
                         if (xpp.getName().equals("item")) {
                             Log.d(TAG, "Item Title: " + title);
-                            if (firstimage.contains("http")) {
+                            // 카테고리 ID가 25가 아닌 경우만 추가
+                            if (contentTypeId != 25 && firstimage.contains("http")) {
                                 boolean isMatch = searchQuery.isEmpty() || title.toLowerCase().contains(searchQuery.toLowerCase());
                                 if (isMatch) {
                                     TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid, mapx, mapy);
@@ -265,11 +272,12 @@ public class PlaceFragment extends Fragment {
             placeAdapter.setOnPlaceSelectedListener((tourApi) -> {
                 LatLng selectedPlaceLatLng = new LatLng(tourApi.getMapy(), tourApi.getMapx());
                 String placeName = tourApi.getTitle();
+                String placeimage = tourApi.getFirstimage();
 
                 // MapActivity에 선택된 장소를 추가 또는 수정
                 if (getActivity() instanceof MapActivity) {
                     MapActivity mapActivity = (MapActivity) getActivity();
-                    mapActivity.addPlaceToMap(placeName, selectedPlaceLatLng, editPosition);  // editPosition 전달
+                    mapActivity.addPlaceToMap(placeName, selectedPlaceLatLng, editPosition, placeimage);
                 }
 
                 // PlaceFragment 종료

@@ -2,6 +2,7 @@ package com.example.mogu.custom;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mogu.R;
+import com.example.mogu.object.PlaceData;
 import com.example.mogu.screen.FindDestination;
 import com.example.mogu.share.LocationPreference;
 import com.google.android.gms.maps.model.LatLng;
@@ -21,6 +23,7 @@ import java.util.List;
 
 public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.ViewHolder> {
 
+    // 장소 이름과 메모, Day 정보를 저장하는 리스트들
     private List<String> placeNames;  // 장소 이름 목록
     private List<String> notes;  // 메모 목록
     private String day;  // Day 정보
@@ -28,7 +31,7 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.View
     private Context context; // Context를 저장
 
     // 생성자: 어댑터에 필요한 데이터들을 초기화
-    public PlaceListAdapter(Context context, List<String> placeNames, List<String> notes, String day, List<LatLng> locations) {
+    public PlaceListAdapter(Context context,List<String> placeNames, List<String> notes, String day, List<LatLng> locations) {
         this.context = context;
         this.placeNames = placeNames;
         this.notes = notes;
@@ -38,19 +41,21 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.View
 
     @NonNull
     @Override
+    // ViewHolder 생성: list_place_item_home 레이아웃을 기반으로 새로운 ViewHolder를 생성
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_place_item_home, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
+    // ViewHolder에 데이터를 바인딩: 해당 위치의 장소 이름, 메모, Day 정보를 설정하고 길찾기 버튼의 클릭 리스너를 설정
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.placeNameTextView.setText(placeNames.get(position));  // 장소 이름 설정
         holder.noteTextView.setText(notes.get(position));  // 메모 설정
         holder.dayTextView.setText(day);  // Day 정보 설정
 
         // 길찾기 버튼의 클릭 리스너 설정
-        holder.routeButton.setOnClickListener(v -> handleRouteButtonClick(position));
+        holder.routeButton.setOnClickListener(v ->handleRouteButtonClick(position));
     }
 
     private void handleRouteButtonClick(int position) {
@@ -82,6 +87,7 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.View
     }
 
     @Override
+    // RecyclerView에 표시할 아이템의 수를 반환
     public int getItemCount() {
         return placeNames.size();  // 장소 이름 리스트의 크기를 반환
     }

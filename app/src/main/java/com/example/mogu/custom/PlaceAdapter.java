@@ -137,7 +137,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
                         LatLng placeLatLng = new LatLng(latitude, longitude);
 
                         PlaceData placeData = new PlaceData();
-                        placeData.addPlace(placeName, placeLatLng, ""); // 빈 노트를 기본값으로 설정
+                        placeData.addPlace(placeName, placeLatLng, "", ""); // 빈 노트를 기본값으로 설정
 
                         Log.d("PlaceAdapter", "날짜: " + day);
                         Log.d("PlaceAdapter", "장소 이름: " + placeName);

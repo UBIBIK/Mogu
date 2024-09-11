@@ -9,17 +9,19 @@ public class LocationInfo implements Parcelable {
     private Double latitude; // 장소 위도 추후 수정 가능
     private Double longitude; // 장소 경도 추후 수정 가능
     private String note; // 메모
+    private String image;
 
     // Default constructor
     public LocationInfo() {}
 
     // Parameterized constructor
-    public LocationInfo(String locationName, String address, Double latitude, Double longitude, String note) {
+    public LocationInfo(String locationName, String address, Double latitude, Double longitude, String note, String image) {
         this.locationName = locationName;
         this.address = address;
         this.latitude = latitude;
         this.longitude = longitude;
         this.note = note;
+        this.image = image;
     }
 
     // Parcelable constructor
@@ -37,6 +39,7 @@ public class LocationInfo implements Parcelable {
             longitude = in.readDouble();
         }
         note = in.readString();
+        image = in.readString();
     }
 
     public static final Creator<LocationInfo> CREATOR = new Creator<LocationInfo>() {
@@ -92,6 +95,10 @@ public class LocationInfo implements Parcelable {
         this.note = note;
     }
 
+    public String getImage() { return image;}
+
+    public void setImage(String image) {this.image = image; }
+
     @Override
     public int describeContents() {
         return 0;
@@ -114,5 +121,6 @@ public class LocationInfo implements Parcelable {
             dest.writeDouble(longitude);
         }
         dest.writeString(note);
+        dest.writeString(image);
     }
 }

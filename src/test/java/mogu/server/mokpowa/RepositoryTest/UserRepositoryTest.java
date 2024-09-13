@@ -29,4 +29,15 @@ class UserRepositoryTest {
         User finduser = userRepository.getUserDetail(TEST_USER_EMAIL);
         System.out.println(finduser.getUserEmail() + ", " + finduser.getUserName() + ", " + finduser.getPassword());
     }
+
+    @Test
+    void deleteUser_Test() throws Exception {
+        userRepository.deleteUser(TEST_USER_EMAIL);
+    }
+
+    @Test
+    void findUserId_Test() throws Exception {
+        String findUserId = userRepository.findUserId("오민성", "01012341234");
+        System.out.println("찾은 아이디 : " + findUserId);
+    }
 }

@@ -14,4 +14,8 @@ public interface UserRepository {
     String updateUser(User user) throws ExecutionException, InterruptedException; // 사용자 정보 수정
 
     List<User> getUsers() throws Exception; // 모든 사용자 조회
+
+    String deleteUser(String email) throws Exception; // 사용자 정보 삭제
+    
+    String findUserId(String username, String phoneNumber) throws Exception; // 사용자 아이디 조회
 }

@@ -1,13 +1,10 @@
 package mogu.server.mokpowa;
 
 import mogu.server.mokpowa.controller.AndroidController;
-import mogu.server.mokpowa.dto.GroupInfo;
-import mogu.server.mokpowa.dto.LocationInfo;
-import mogu.server.mokpowa.dto.TripScheduleInfo;
+import mogu.server.mokpowa.dto.*;
 import mogu.server.mokpowa.dto.TripScheduleRequest.CreateTripScheduleRequest;
 import mogu.server.mokpowa.dto.TripScheduleRequest.DeleteTripScheduleRequest;
 import mogu.server.mokpowa.dto.TripScheduleRequest.UpdateTripScheduleRequest;
-import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.TripSchedule;
 import mogu.server.mokpowa.repository.TripScheduleRepository;
 import org.junit.jupiter.api.Test;
@@ -33,8 +30,8 @@ public class UserControllerTest {
     private static final String TEST_GROUP_KEY = "6x6njlutur41ovcv";
     private static final String TEST_GROUP_KEY2 = "4x15torzialiynot";
     private static final String TEST_GROUP_MASTER_NAME = "qwe";
-    private static final String TEST_GROUP_MEMBER_EMAIL = "1qwe@123";
-    private static final String TEST_GROUP_MEMBER_PASSWORD = "123";
+    private static final String TEST_GROUP_MEMBER_EMAIL = "312";
+    private static final String TEST_GROUP_MEMBER_PASSWORD = "123qwe";
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,6 +40,10 @@ public class UserControllerTest {
     @Autowired
     private TripScheduleRepository tripScheduleRepository;
 
+    @Test
+    public void testFindUserId() throws Exception {
+
+    }
     @Test
     public void testLoginUser() throws Exception {
         String loginUserJson = "{ \"userEmail\": \"1qwe@123\", \"password\": \"123\" }";
@@ -58,6 +59,32 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.groupList[0].tripScheduleList", hasSize(greaterThan(0))));
     }
 
+    @Test
+    public void testUserId() throws Exception {
+        FindUserIdRequest request = new FindUserIdRequest("오민성", "01012341234");
+        String findUserId = androidController.findUserId(request);
+        System.out.println("찾은 아이디 : " + findUserId);
+    }
+
+    @Test
+    public void testSignout() throws Exception {
+        // 로그인 사용자 정보 설정
+        UserInfo loginUser = new UserInfo();
+        loginUser.setUserEmail(TEST_GROUP_MEMBER_EMAIL);
+        loginUser.setPassword(TEST_GROUP_MEMBER_PASSWORD);
+
+        // 로그인 사용자 정보 받아오기
+        ResponseEntity<UserInfo> response = androidController.loginUser(loginUser);
+        if (response == null || response.getBody() == null) {
+            throw new Exception("로그인 실패: 사용자 정보를 받아오지 못했습니다.");
+        }
+        UserInfo userInfo = response.getBody();
+
+        String result = String.valueOf(androidController.deleteUser(userInfo));
+        System.out.println(result);
+    }
+
+    // 회원탈퇴 테스트
     @Test
     public void testTripCreate() throws Exception {
         // 로그인 사용자 정보 설정
@@ -92,7 +119,7 @@ public class UserControllerTest {
                         "http://tong.visitkorea.or.kr/cms/resource/33/2678633_image2_1.jpg", "두번째 일정"));
 
         // 세 번째 일정 장소 추가
-        tripScheduleInfo.getTripScheduleDetails().getLast().getLocationInfo().addFirst(
+        tripScheduleInfo.getTripScheduleDetails().getFirst().getLocationInfo().add(2,
                 new LocationInfo("고하도 전망대", "전라남도 목포시 고하도안길 234", 34.7779928, 126.3591099,
                         "http://tong.visitkorea.or.kr/cms/resource/33/2678633_image2_1.jpg", "세번째 일정"));
 
@@ -207,4 +234,58 @@ public class UserControllerTest {
         // 만약 그룹이 일치하는 그룹을 찾지 못한 경우 테스트 실패 처리
         assertTrue(isTripUpdated, "일정이 업데이트된 그룹을 찾지 못했습니다.");
     }
+
+    @Test
+    public void testTripUpdate2() throws Exception {
+        // 로그인 정보 설정
+        UserInfo loginUser = new UserInfo();
+        loginUser.setUserEmail(TEST_GROUP_MEMBER_EMAIL);
+        loginUser.setPassword(TEST_GROUP_MEMBER_PASSWORD);
+
+        // 로그인 사용자 정보 받아오기
+        ResponseEntity<UserInfo> response = androidController.loginUser(loginUser);
+        if (response == null || response.getBody() == null) {
+            throw new Exception("로그인 실패: 사용자 정보를 받아오지 못했습니다.");
+        }
+        UserInfo userInfo = response.getBody();
+
+        // 일정 업데이트 정보 가져오기
+        TripScheduleInfo updateTrip = tripScheduleRepository.getTripScheduleDetails(TEST_GROUP_KEY);
+        if (updateTrip == null || updateTrip.getTripScheduleDetails() == null) {
+            throw new Exception("일정 정보를 받아오지 못했습니다.");
+        }
+
+        // 첫 번째 날의 두 번째 요소 삭제
+        updateTrip.getTripScheduleDetails().getFirst().getLocationInfo().remove(1);
+
+        // 업데이트 요청 생성
+        UpdateTripScheduleRequest request = new UpdateTripScheduleRequest(userInfo, updateTrip);
+
+        // 일정 업데이트 요청
+        ResponseEntity<UserInfo> response2 = androidController.tripUpdate(request);
+        if (response2 == null || response2.getBody() == null) {
+            throw new Exception("일정 업데이트 실패: 사용자 정보를 받아오지 못했습니다.");
+        }
+        UserInfo updatedUser = response2.getBody();
+
+        // 업데이트된 정보 검증
+        assertNotNull(updatedUser);
+        assertNotNull(updatedUser.getGroupList());
+
+        // 특정 그룹의 업데이트된 여행 일정 검증
+        boolean isTripUpdated = false;
+        for (GroupInfo groupInfo : updatedUser.getGroupList()) {
+            if (groupInfo.getGroupKey().equals(updateTrip.getGroupKey())) {
+                // 첫 번째 날의 첫 번째 요소가 삭제되었는지 확인
+                int locationInfoSize = groupInfo.getTripScheduleList().getFirst()
+                        .getTripScheduleDetails().getFirst().getLocationInfo().size();
+                assertEquals(0, locationInfoSize, "첫 번째 날의 첫 번째 요소가 삭제되지 않았습니다.");
+                isTripUpdated = true;
+            }
+        }
+
+        // 만약 그룹이 일치하는 그룹을 찾지 못한 경우 테스트 실패 처리
+        assertTrue(isTripUpdated, "일정이 업데이트된 그룹을 찾지 못했습니다.");
+    }
+
 }

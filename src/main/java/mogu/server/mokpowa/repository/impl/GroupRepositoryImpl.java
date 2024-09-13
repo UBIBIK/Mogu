@@ -195,14 +195,14 @@ public class GroupRepositoryImpl implements GroupRepository {
         // 삭제하려는 멤버가 존재하는지 확인
         ApiFuture<QuerySnapshot> userQuerySnapshot = firestore.collection("users").whereEqualTo("userEmail", deleteGroupMemberEmail).get();
         if (userQuerySnapshot.get().getDocuments().isEmpty()) {
-            throw new Exception("해당 유저는 존재하지 않습니다.");
+            throw new Exception("해당 사용자가 존재하지 않습니다.");
         }
 
         // 그룹이 존재하는지 확인
         ApiFuture<QuerySnapshot> groupQuerySnapshot = firestore.collection(COLLECTION_NAME).whereEqualTo("groupName", deleteGroupName).get();
         List<QueryDocumentSnapshot> userDocuments = userQuerySnapshot.get().getDocuments();
         if (userDocuments.isEmpty()) {
-            throw new Exception("해당 유저는 존재하지 않습니다.");
+            throw new Exception("해당 그룹이 존재하지 않습니다.");
         } else {
             System.out.println("User found: " + userDocuments.getFirst().getData());
         }

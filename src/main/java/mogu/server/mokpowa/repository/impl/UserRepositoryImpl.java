@@ -5,8 +5,8 @@ import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.User;
-import org.springframework.stereotype.Service;
 import mogu.server.mokpowa.repository.UserRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,5 +74,38 @@ public class UserRepositoryImpl implements UserRepository {
             list.add(document.toObject(User.class));
         }
         return list;
+    }
+
+    @Override
+    public String deleteUser(String email) throws Exception {
+        // 해당 유저가 존재하는지 확인
+        ApiFuture<QuerySnapshot> querySnapshot = firestore.collection(COLLECTION_NAME)
+                .whereEqualTo("userEmail", email)
+                .select("userName") // 필요한 필드만 조회
+                .get();
+
+        // 사용자가 존재하지 않으면 예외 처리
+        if (querySnapshot.get().getDocuments().isEmpty()) {
+            throw new Exception("해당 사용자가 존재하지 않습니다.");
+        }
+
+        DocumentSnapshot document = querySnapshot.get().getDocuments().getFirst(); // 첫 번째 문서
+        if (document.exists()) {
+            // 해당 사용자 정보를 삭제
+            document.getReference().delete();
+        }
+
+        return "사용자 삭제 완료";
+    }
+
+    @Override
+    public String findUserId(String username, String phoneNumber) throws Exception {
+        List<User> list = getUsers();
+        for (User user : list) {
+            if (user.getUserName().equals(username) && user.getPhoneNumber().equals(phoneNumber)) {
+                return user.getUserEmail();
+            }
+        }
+        throw new Exception("해당하는 사용자가 존재하지 않습니다.");
     }
 }

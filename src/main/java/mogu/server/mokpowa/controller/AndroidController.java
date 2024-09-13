@@ -2,17 +2,14 @@ package mogu.server.mokpowa.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import mogu.server.mokpowa.config.SecurityConfig;
-import mogu.server.mokpowa.dto.GroupInfo;
-import mogu.server.mokpowa.dto.GroupMember;
+import mogu.server.mokpowa.dto.*;
 import mogu.server.mokpowa.dto.GroupRequest.CreateGroupRequest;
 import mogu.server.mokpowa.dto.GroupRequest.DeleteGroupMemberRequest;
 import mogu.server.mokpowa.dto.GroupRequest.DeleteGroupRequest;
 import mogu.server.mokpowa.dto.GroupRequest.JoinGroupRequest;
-import mogu.server.mokpowa.dto.TripScheduleInfo;
 import mogu.server.mokpowa.dto.TripScheduleRequest.CreateTripScheduleRequest;
 import mogu.server.mokpowa.dto.TripScheduleRequest.DeleteTripScheduleRequest;
 import mogu.server.mokpowa.dto.TripScheduleRequest.UpdateTripScheduleRequest;
-import mogu.server.mokpowa.dto.UserInfo;
 import mogu.server.mokpowa.entity.Group;
 import mogu.server.mokpowa.entity.TripSchedule;
 import mogu.server.mokpowa.entity.User;
@@ -28,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 
 @Slf4j
@@ -61,6 +59,13 @@ public class AndroidController {
         user.setPassword(hashedPassword);
 
         return userRepository.insertUser(user);
+    }
+
+    // 아이디 찾기
+    @PostMapping("/api/FindUserId")
+    @ResponseBody
+    public String findUserId(@RequestBody FindUserIdRequest request) throws Exception {
+        return userRepository.findUserId(request.getUsername(), request.getPhoneNumber());
     }
 
     // 로그인
@@ -111,6 +116,35 @@ public class AndroidController {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 비밀번호 불일치로 로그인 실패
         }
+    }
+
+    // 회원 탈퇴
+    @PostMapping("/api/signout")
+    @ResponseBody
+    public ResponseEntity<String> deleteUser(@RequestBody UserInfo deleteuser) throws Exception {
+        User user = userRepository.getUserDetail(deleteuser.getUserEmail());
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
+        }
+
+        // 가입된 그룹이 있을 경우 해당 정보 삭제
+        if (deleteuser.getGroupList() != null) {
+            for (GroupInfo groupInfo : deleteuser.getGroupList()) {
+                log.info("Group Name: {}", groupInfo.getGroupName());
+                log.info("User Email: {}", deleteuser.getUserEmail());
+                // 사용자가 그룹장인 그룹이 존재하는지 확인
+                if (Objects.equals(groupInfo.getGmEmail(), deleteuser.getUserEmail())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("당신이 그룹장인 그룹을 삭제하고 다시 탈퇴해주세요.");
+                }
+                groupRepository.deleteGroupMember(groupInfo.getGroupName(), deleteuser.getUserEmail(), deleteuser);
+            }
+        }
+
+        // 유저 삭제
+        userRepository.deleteUser(deleteuser.getUserEmail());
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("회원 삭제 완료");
     }
 
     // 그룹 생성

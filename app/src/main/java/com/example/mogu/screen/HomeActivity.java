@@ -52,6 +52,7 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.HomeButton).setOnClickListener(v -> replaceFragment(new HomeFragment()));
         findViewById(R.id.GroupButton).setOnClickListener(v -> replaceFragment(new GroupFragment()));
         findViewById(R.id.MapButton).setOnClickListener(v -> replaceFragment(new MapFragment()));
+        findViewById(R.id.MypageButton).setOnClickListener(v -> replaceFragment(new MypageFragment()));
 
         // 초기 프래그먼트 설정
         if (savedInstanceState == null) {

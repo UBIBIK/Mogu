@@ -68,11 +68,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // ID/PW 찾기 버튼 클릭 리스너 설정 (현재 주석 처리됨)
+        // ID 찾기 버튼 클릭 리스너 설정
         findViewById(R.id.findIdPwButton).setOnClickListener(v -> {
-            // ID/PW 찾기 화면으로 이동
-            // Intent intent = new Intent(MainActivity.this, FindIdPwActivity.class);
-            // startActivity(intent);
+            // ID 찾기 화면으로 이동
+            Intent intent = new Intent(MainActivity.this, FindIdActivity.class);
+            startActivity(intent);
         });
 
         // 테스트버튼

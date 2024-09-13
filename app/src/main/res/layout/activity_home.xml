@@ -19,13 +19,6 @@
         android:layout_height="70dp">
 
         <Button
-            android:id="@+id/BoardButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/board_button" />
-
-        <Button
             android:id="@+id/GroupButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -310,7 +310,7 @@ public class MapFragment extends Fragment {
         }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint({"MissingPermission", "ResourceType"})
     private void selectDayButton(Button button) {
         if (selectedDayButton != null) {
             selectedDayButton.setSelected(false);

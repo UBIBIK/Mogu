@@ -37,6 +37,7 @@
         <activity android:name=".screen.HomeActivity"></activity>
         <activity android:name=".screen.CalendarActivity"></activity>
         <activity android:name=".screen.FindDestination"></activity>
+        <activity android:name=".screen.FindIdActivity"></activity>
 
         <!-- Kakao SDK 초기화를 위한 설정 -->
         <meta-data

@@ -68,13 +68,13 @@
             android:background="#48bbed"
             android:textColor="#ffffff" />
 
-        <!-- ID/PW 찾기 버튼 -->
+        <!-- ID 찾기 버튼 -->
         <Button
             android:id="@+id/findIdPwButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="ID/PW 찾기"
+            android:text="ID 찾기"
             android:layout_marginStart="4dp"
             android:background="#48bbed"
             android:textColor="#ffffff" />

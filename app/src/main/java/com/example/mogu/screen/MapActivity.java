@@ -185,7 +185,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        googleMap.addMarker(new MarkerOptions().position(startPosition).title("목포"));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPosition, 15));
 
         // 지도가 준비된 후에만 getStartLocation 호출

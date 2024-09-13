@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- 내 정보 텍스트뷰-->
+    <TextView
+        android:id="@+id/my_information"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="내 정보"
+        android:textSize="24dp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:textColor="#ffffff"
+        android:background="@drawable/gradient_background">
+
+    </TextView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:orientation="vertical">
+
+        <!-- 로그아웃 버튼 -->
+        <Button
+            android:id="@+id/button_logout"
+            android:layout_width="350dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:text="로그아웃"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:background="@drawable/rounded_button_yellow">
+
+        </Button>
+
+        <!-- 회원탈퇴 버튼 -->
+        <Button
+            android:id="@+id/button_withdraw"
+            android:layout_width="350dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:text="회원탈퇴"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:background="@drawable/rounded_button_red">
+
+        </Button>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="#ff0000"
+            android:text="회원탈퇴 버튼 누르기 전에 한번 더 생각하셨나요? 버튼을 누르면 즉시 탈퇴처리 됩니다."
+            android:textStyle="italic"
+            android:textSize="30dp"
+            android:background="@drawable/gradient_background"
+            android:padding="8dp">
+
+        </TextView>
+
+    </LinearLayout>
+
+</LinearLayout>

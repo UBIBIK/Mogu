@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- 아이디 찾기 텍스트 뷰 -->
+    <TextView
+        android:id="@+id/find_id"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="ID 찾기"
+        android:textSize="24dp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:textColor="#ffffff"
+        android:background="@drawable/gradient_background">
+
+    </TextView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/input_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:padding="10dp"
+            android:hint="이름을 입력해주세요.">
+        </EditText>
+
+        <EditText
+            android:id="@+id/input_phonenum"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:padding="10dp"
+            android:hint="핸드폰 번호를 입력해주세요.">
+        </EditText>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="30dp">
+
+            <Button
+                android:id="@+id/button_ok"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="50dp"
+                android:background="@drawable/rounded_button_blue"
+                android:text="확인"
+                android:textColor="#ffffff"
+                android:textSize="20dp">
+
+            </Button>
+
+            <Button
+                android:id="@+id/button_cancel"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="100dp"
+                android:background="@drawable/rounded_button_blue"
+                android:text="취소"
+                android:textColor="#ffffff"
+                android:textSize="20dp">
+
+            </Button>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</LinearLayout>

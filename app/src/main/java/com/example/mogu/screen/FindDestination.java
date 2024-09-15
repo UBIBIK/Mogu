@@ -131,6 +131,8 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
         JSONArray tourFeatures = readGeoJsonFromFile(R.raw.tour);
         addTourMarkersFromGeoJson(mMap, tourFeatures);
 
+        mMap.setOnCameraIdleListener(this);
+
         // 마커 클릭 리스너 설정
         mMap.setOnMarkerClickListener(marker -> {
             String placeName = marker.getTitle();
@@ -195,10 +197,11 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
                         continue; // 이 관광지 마커는 추가하지 않고 넘어감
                     }
 
+                    // 마커 추가
                     MarkerOptions markerOptions = new MarkerOptions()
                             .position(positionLatLng)
                             .title(placeName)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)); // 기본 마커 색상 설정 (#48BBED와 유사한 색상)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)); // 기본 마커 색상 설정
 
                     Marker marker = map.addMarker(markerOptions);
 
@@ -211,8 +214,6 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
             Log.e(TAG, "addTourMarkersFromGeoJson: 관광지 마커 추가 중 오류", e);
         }
     }
-
-
 
     // 마커 클릭 시 이미지를 다운로드하여 표시
     @SuppressLint("StaticFieldLeak")
@@ -380,10 +381,13 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
                 averageSafetyIndex = totalSafetyIndex / safetyCount;
             }
 
+            Log.i(TAG, "Safety data loaded successfully");
+
         } catch (Exception e) {
             Log.e(TAG, "loadSafetyData: 안전 정보 로드 중 예외 발생", e);
         }
     }
+
 
     private void drawPolyline(JSONArray path) throws JSONException {
         PolylineOptions routePolylineOptions = new PolylineOptions();
@@ -405,12 +409,13 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
     private void drawSafetyInfoWithinBounds(JSONArray features, LatLngBounds bounds) throws JSONException {
         if (features == null) return;
 
-        // 현재 화면에 보이는 폴리라인만 유지하고 나머지는 제거
         List<String> currentKeys = new ArrayList<>();
         for (int i = 0; i < features.length(); i++) {
             JSONObject feature = features.getJSONObject(i);
             JSONObject geometry = feature.getJSONObject("geometry");
             String type = geometry.getString("type");
+
+            Log.i(TAG, "Processing feature: " + i + " of type: " + type);
 
             if (type.equals("LineString") || type.equals("MultiLineString")) {
                 JSONArray coordinatesArray = type.equals("LineString")
@@ -428,6 +433,7 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
                     LatLng point = new LatLng(lat, lng);
                     polylineOptions.add(point);
                     keyBuilder.append(lat).append(",").append(lng).append(";");
+
                     if (bounds.contains(point)) {
                         isInBounds = true;
                     }
@@ -438,10 +444,13 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
 
                 if (isInBounds && !displayedPolylines.containsKey(polylineKey)) {
                     int safetyIndex = feature.getJSONObject("properties").getInt("safety_index");
+                    Log.i(TAG, "Drawing polyline for safety index: " + safetyIndex);
                     int color = getColorForSafetyScore(safetyIndex);
-                    polylineOptions.color(color).width(10).zIndex(0.5f); // 안전 폴리라인의 zIndex를 0.5로 설정
+                    polylineOptions.color(color).width(10).zIndex(0.5f);
                     Polyline polyline = mMap.addPolyline(polylineOptions);
                     displayedPolylines.put(polylineKey, polyline);
+                } else {
+                    Log.i(TAG, "Feature not in bounds or already displayed.");
                 }
             }
         }
@@ -450,14 +459,16 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
         displayedPolylines.keySet().retainAll(currentKeys);
     }
 
+
+
     private void scheduleSafetyDisplay() {
-        // 이전에 예약된 작업이 있다면 취소
         if (safetyDisplayRunnable != null) {
             safetyDisplayHandler.removeCallbacks(safetyDisplayRunnable);
         }
 
         safetyDisplayRunnable = () -> {
             LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+            Log.i(TAG, "Map bounds: " + bounds.toString());
             try {
                 drawSafetyInfoWithinBounds(safetyData, bounds);
             } catch (JSONException e) {
@@ -465,33 +476,37 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
             }
         };
 
-        // 딜레이 후에 실행
+        Log.i(TAG, "Scheduling safety display with delay.");
         safetyDisplayHandler.postDelayed(safetyDisplayRunnable, SAFETY_DISPLAY_DELAY);
     }
 
     private int getColorForSafetyScore(int safetyScore) {
-        // 평균값을 기준으로 노란색, 그 이후로 초록색으로 변환
         float hue;
         if (safetyScore < averageSafetyIndex) {
-            hue = 60f * (safetyScore / (float) averageSafetyIndex);  // 빨강(0)에서 노랑(60)으로 변환
+            hue = 60f * (safetyScore / (float) averageSafetyIndex);
         } else {
-            hue = 60f + 60f * ((safetyScore - (float) averageSafetyIndex) / (100f - (float) averageSafetyIndex));  // 노랑(60)에서 초록(120)으로 변환
+            hue = 60f + 60f * ((safetyScore - (float) averageSafetyIndex) / (100f - (float) averageSafetyIndex));
         }
+        Log.i(TAG, "Safety score: " + safetyScore + " -> Color hue: " + hue);
         return Color.HSVToColor(new float[]{hue, 1f, 1f});
     }
 
     @Override
     public void onCameraIdle() {
-        if (mMap.getCameraPosition().zoom >= ZOOM_THRESHOLD) {
+        float zoom = mMap.getCameraPosition().zoom;
+        Log.i(TAG, "Current zoom level: " + zoom);
+        if (zoom >= ZOOM_THRESHOLD) {
+            Log.i(TAG, "Zoom level is sufficient, scheduling safety display.");
             scheduleSafetyDisplay();
         } else {
-            // 줌 아웃 시 모든 안전 폴리라인을 제거
+            Log.i(TAG, "Zoom level is too low, clearing polylines.");
             for (Polyline polyline : displayedPolylines.values()) {
                 polyline.remove();
             }
             displayedPolylines.clear();
         }
     }
+
 
     private void clearCurrentPolyline() {
         if (currentPolyline != null) {

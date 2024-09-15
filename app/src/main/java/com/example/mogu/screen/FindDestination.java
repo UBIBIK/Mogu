@@ -48,7 +48,7 @@ import java.util.Objects;
 
 public class FindDestination extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnCameraIdleListener, SafeAdapter.OnSwitchCheckedChangeListener {
 
-    private static final String TAG = "NextActivity";
+    private static final String TAG = "FindDestination";
     private static final int ZOOM_THRESHOLD = 15; // 줌 레벨 임계값
     private static final long SAFETY_DISPLAY_DELAY = 500; // 0.5초 딜레이
     private GoogleMap mMap;
@@ -60,6 +60,7 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
     private final Map<String, Polyline> displayedPolylines = new HashMap<>(); // 화면에 표시된 폴리라인들
     private final Handler safetyDisplayHandler = new Handler();
     private Runnable safetyDisplayRunnable;
+    private Marker lastSelectedMarker = null;
 
     // 경로 데이터를 캐싱하기 위한 맵
     private final Map<String, JSONArray> routeCache = new HashMap<>();
@@ -116,20 +117,139 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
-        mMap.addMarker(new MarkerOptions().position(markerLatLng).title("도착지"));
-        mMap.addMarker(new MarkerOptions().position(mokpoUnivLatLng).title("목포해양대학교"));
+        mMap.addMarker(new MarkerOptions().position(markerLatLng).title("출발지"));
+        mMap.addMarker(new MarkerOptions().position(mokpoUnivLatLng).title("도착지"));
 
         LatLngBounds bounds = new LatLngBounds.Builder()
                 .include(markerLatLng)
                 .include(mokpoUnivLatLng)
                 .build();
 
-        // 두 마커가 모두 보이도록 카메라를 이동하고 줌 레벨을 조정합니다.
-        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100)); // 패딩 값으로 여유를 줌
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
 
-        mMap.setOnCameraIdleListener(this); // 카메라 이동이 멈췄을 때 리스너 설정
+        // 관광지 마커 추가
+        JSONArray tourFeatures = readGeoJsonFromFile(R.raw.tour);
+        addTourMarkersFromGeoJson(mMap, tourFeatures);
+
+        // 마커 클릭 리스너 설정
+        mMap.setOnMarkerClickListener(marker -> {
+            String placeName = marker.getTitle();
+            String imageUrl = (String) marker.getTag();  // 마커에 이미지 URL을 태그로 저장
+
+            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                // 이전에 선택된 마커가 있으면 원래의 상태로 복원
+                if (lastSelectedMarker != null && lastSelectedMarker != marker) {
+                    resetMarkerToDefault(lastSelectedMarker);
+                }
+                // 선택된 마커에 이미지 설정
+                new LoadImageTask(mMap, marker).execute(imageUrl);
+                lastSelectedMarker = marker;
+            }
+
+            return false; // 기본 동작을 수행하도록 false 반환
+        });
+
+        // 지도를 클릭하면 선택된 마커를 복원
+        mMap.setOnMapClickListener(latLng -> {
+            if (lastSelectedMarker != null) {
+                resetMarkerToDefault(lastSelectedMarker);
+                lastSelectedMarker = null;
+            }
+        });
 
         loadRoute("shortest_path");
+    }
+
+    // 두 좌표 사이의 거리를 미터 단위로 계산
+    private double calculateDistance(LatLng latLng1, LatLng latLng2) {
+        double earthRadius = 6371000; // 미터 단위
+        double dLat = Math.toRadians(latLng2.latitude - latLng1.latitude);
+        double dLng = Math.toRadians(latLng2.longitude - latLng1.longitude);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(latLng1.latitude)) * Math.cos(Math.toRadians(latLng2.latitude)) *
+                        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadius * c;
+    }
+
+    private void addTourMarkersFromGeoJson(GoogleMap map, JSONArray geoJsonFeatures) {
+        try {
+            for (int i = 0; i < geoJsonFeatures.length(); i++) {
+                JSONObject feature = geoJsonFeatures.getJSONObject(i);
+                JSONObject geometry = feature.getJSONObject("geometry");
+                JSONObject properties = feature.getJSONObject("properties");
+
+                if (geometry.getString("type").equals("Point")) {
+                    JSONArray coordinates = geometry.getJSONArray("coordinates");
+                    double lon = coordinates.getDouble(0);
+                    double lat = coordinates.getDouble(1);
+
+                    String placeName = properties.getString("PlaceName");
+                    String imageUrl = properties.getString("Image");
+
+                    LatLng positionLatLng = new LatLng(lat, lon);
+
+                    // 도착지와의 거리가 10m 이하이면 관광지 마커를 추가하지 않음
+                    if (calculateDistance(positionLatLng, mokpoUnivLatLng) <= 10) {
+                        Log.i(TAG, "Tour marker '" + placeName + "' is too close to the destination. Skipping.");
+                        continue; // 이 관광지 마커는 추가하지 않고 넘어감
+                    }
+
+                    MarkerOptions markerOptions = new MarkerOptions()
+                            .position(positionLatLng)
+                            .title(placeName)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)); // 기본 마커 색상 설정 (#48BBED와 유사한 색상)
+
+                    Marker marker = map.addMarker(markerOptions);
+
+                    if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                        marker.setTag(imageUrl); // 이미지 URL을 태그로 저장
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "addTourMarkersFromGeoJson: 관광지 마커 추가 중 오류", e);
+        }
+    }
+
+
+
+    // 마커 클릭 시 이미지를 다운로드하여 표시
+    @SuppressLint("StaticFieldLeak")
+    private static class LoadImageTask extends AsyncTask<String, Void, Bitmap> {
+        private final GoogleMap map;
+        private final Marker marker;
+
+        public LoadImageTask(GoogleMap map, Marker marker) {
+            this.map = map;
+            this.marker = marker;
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... urls) {
+            String url = urls[0];
+            try {
+                InputStream in = new URL(url).openStream();
+                Bitmap image = BitmapFactory.decodeStream(in);
+                return Bitmap.createScaledBitmap(image, 300, 300, false);
+            } catch (Exception e) {
+                Log.e(TAG, "LoadImageTask: 이미지 로드 중 오류 발생", e);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            if (bitmap != null) {
+                // 이미지를 마커로 변경
+                marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
+            }
+        }
+    }
+
+    // 마커를 기본 마커로 되돌림
+    private void resetMarkerToDefault(Marker marker) {
+        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
     }
 
     private List<SafeItem> getSwitchItems() {
@@ -179,11 +299,11 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
 
                 JSONObject jsonParam = new JSONObject();
                 JSONObject start = new JSONObject();
-                start.put("lat", mokpoUnivLatLng.latitude);
-                start.put("lon", mokpoUnivLatLng.longitude);
+                start.put("lat", markerLatLng.latitude);
+                start.put("lon", markerLatLng.longitude);
                 JSONObject end = new JSONObject();
-                end.put("lat", markerLatLng.latitude);
-                end.put("lon", markerLatLng.longitude);
+                end.put("lat", mokpoUnivLatLng.latitude);
+                end.put("lon", mokpoUnivLatLng.longitude);
 
                 jsonParam.put("start", start);
                 jsonParam.put("end", end);
@@ -391,7 +511,7 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
             }
             String jsonString = builder.toString();
             JSONObject geoJsonObject = new JSONObject(jsonString);
-            return geoJsonObject.getJSONArray("features"); // GeoJSON에서 'features' 배열을 추출
+            return geoJsonObject.getJSONArray("features");
         } catch (Exception e) {
             Log.e(TAG, "readGeoJsonFromFile: 파일 읽기 오류", e);
         }
@@ -414,10 +534,35 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
                     LatLng positionLatLng = new LatLng(lat, lon);
                     MarkerOptions markerOptions = new MarkerOptions().position(positionLatLng);
 
-                    // 소방서 마커 커스텀 (position == 0 일 때)
-                    if (position == 0) { // 소방서 항목일 때
-                        Bitmap smallMarker = BitmapFactory.decodeResource(getResources(), R.drawable.fire_fighting); // 원하는 크기로 조절
-                        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(smallMarker)); // 커스텀 마커 설정
+                    // 각 마커 아이콘의 이미지를 64x64로 축소
+                    Bitmap smallMarker = null;
+                    switch (position) {
+                        case 0: // 소방서
+                            smallMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.fire_fighting), 100, 100, false);
+                            break;
+                        case 1: // CCTV
+                            smallMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.cctv), 100, 100, false);
+                            break;
+                        case 2: // 비상벨
+                            smallMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.bell), 100, 100, false);
+                            break;
+                        case 3: // 스쿨존
+                            smallMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.school_zone), 100, 100, false);
+                            break;
+                        case 4: // 편의점
+                            smallMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.convenience), 100, 100, false);
+                            break;
+                        case 5: // 범죄자 거주지
+                            smallMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.crime), 200, 200, false);
+                            break;
+                        case 6: // 사고다발지역
+                            smallMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.accidents), 150, 150, false);
+                            break;
+                    }
+
+                    // 마커에 아이콘 설정
+                    if (smallMarker != null) {
+                        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
                     }
 
                     // 마커 추가
@@ -431,6 +576,8 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
 
         return markers;
     }
+
+
 
     // 마커를 저장할 리스트
     private Map<Integer, List<Marker>> displayedMarkers = new HashMap<>();

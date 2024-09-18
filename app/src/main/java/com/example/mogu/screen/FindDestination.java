@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.InputStream;
@@ -290,14 +292,19 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
         @Override
         protected JSONArray doInBackground(String... params) {
             routeType = params[0];
+            HttpURLConnection conn = null;
             try {
-                //String urlString = "http://10.0.2.2:5000/calculate_route";
                 String urlString = "http://34.64.214.135:5000/calculate_route";
                 URL url = new URL(urlString);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
 
+                // 타임아웃 설정
+                conn.setConnectTimeout(15000);
+                conn.setReadTimeout(15000);
+
+                // JSON 요청 본문 생성
                 JSONObject jsonParam = new JSONObject();
                 JSONObject start = new JSONObject();
                 start.put("lat", markerLatLng.latitude);
@@ -309,30 +316,41 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
                 jsonParam.put("start", start);
                 jsonParam.put("end", end);
 
+                // 요청 전송
                 conn.setDoOutput(true);
                 conn.getOutputStream().write(jsonParam.toString().getBytes(StandardCharsets.UTF_8));
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                // 응답 읽기
+                InputStream in = new BufferedInputStream(conn.getInputStream());
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+
                 StringBuilder content = new StringBuilder();
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    content.append(inputLine);
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line);
                 }
 
-                in.close();
-                conn.disconnect();
-
+                // 응답 JSON 처리
                 JSONObject jsonResponse = new JSONObject(content.toString());
-                JSONArray route = jsonResponse.getJSONArray(routeType);
 
-                // 캐시에 저장
-                routeCache.put(routeType, route);
-
-                return route;
+                // 방어 코드: shortest_path가 존재하는지 확인
+                if (jsonResponse.has("shortest_path") && !jsonResponse.isNull("shortest_path")) {
+                    JSONArray route = jsonResponse.getJSONArray("shortest_path");
+                    // 캐시에 저장
+                    routeCache.put(routeType, route);
+                    return route;
+                } else {
+                    Log.e(TAG, "shortest_path 필드가 응답에 없습니다.");
+                    return null;  // 응답에 경로 정보가 없으면 null 반환
+                }
 
             } catch (Exception e) {
                 Log.e(TAG, "FetchRouteTask: 경로 요청 중 예외 발생", e);
                 return null;
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
             }
         }
 
@@ -340,16 +358,17 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
         protected void onPostExecute(JSONArray path) {
             if (path != null) {
                 try {
-                    if (mMap.getCameraPosition().zoom >= ZOOM_THRESHOLD) {
-                        scheduleSafetyDisplay();
-                    }
                     drawPolyline(path);
                 } catch (JSONException e) {
                     Log.e(TAG, "FetchRouteTask: 폴리라인 그리기 중 JSONException 발생", e);
                 }
+            } else {
+                // 경로 로딩 실패 시 사용자에게 알림
+                Toast.makeText(FindDestination.this, "경로를 불러오는 중 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
         }
     }
+
 
     private void loadSafetyData() {
         safetyData = new JSONArray();

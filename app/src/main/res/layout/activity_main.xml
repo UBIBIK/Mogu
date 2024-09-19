@@ -80,10 +80,4 @@
             android:textColor="#ffffff" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/testbutton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="테스트용" />
-
 </LinearLayout>

@@ -32,7 +32,7 @@ import me.relex.circleindicator.CircleIndicator3;
 public class HomeFragment extends Fragment {
 
     // API 요청에 사용할 상수들
-    private static final int NUM_OF_ROWS = 10; // 한 페이지당 항목 수
+    private static final int NUM_OF_ROWS = 30; // 한 페이지당 항목 수
     private static final int PAGE_NO = 1; // 페이지 번호
     private static final String MOBILE_OS = "AND"; // 모바일 운영 체제
     private static final String MOBILE_APP = "AppTest"; // 모바일 애플리케이션 이름

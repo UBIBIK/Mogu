@@ -78,7 +78,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.ViewHolder> {
                 ImageView popupImage = popupView.findViewById(R.id.popupImage);
                 TextView popupSummary = popupView.findViewById(R.id.popupSummary);
                 TextView textPlaceName = popupView.findViewById(R.id.textPlaceName);
-                Button btnAddPlace = popupView.findViewById(R.id.btnAddPlace);
+                //Button btnAddPlace = popupView.findViewById(R.id.btnAddPlace);
 
                 TourApi item = items.get(getAdapterPosition());
                 Glide.with(popupImage.getContext())
@@ -107,11 +107,11 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.ViewHolder> {
                 fetchOverviewData(requestUrl, popupSummary);
 
                 // 장소 추가 버튼 클릭 리스너
-                btnAddPlace.setOnClickListener(v1 -> {
+                /*btnAddPlace.setOnClickListener(v1 -> {
                     Intent intent = new Intent(v.getContext(), MapActivity.class);
                     intent.putExtra("PLACE_NAME", placeName);
                     v.getContext().startActivity(intent);
-                });
+                });*/
             });
         }
 

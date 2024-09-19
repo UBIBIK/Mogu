@@ -378,18 +378,24 @@ public class MapFragment extends Fragment {
             String placeName = placeNames.get(i);
             String imageUrl = locationInfos.get(i).getImage();  // 이미지 URL을 LocationInfo에서 가져옴
 
-            // 장소 마커 추가 및 리스트에 저장
-            Marker marker = googleMap.addMarker(new MarkerOptions().position(location).title(placeName));
-            placeMarkers.add(marker); // 장소 마커 리스트에 추가
-
-            // 커스텀 마커를 원하는 크기로 추가
-            addCustomMarkerToMap(location, placeName, imageUrl, 150, 200);  // 이미지 URL 전달
+            // 이미지 URL이 없는 경우 기본 빨간 마커 추가
+            if (imageUrl == null || imageUrl.isEmpty()) {
+                // 기본 빨간 마커 추가
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(location)
+                        .title(placeName));
+                placeMarkers.add(marker); // 장소 마커 리스트에 추가
+            } else {
+                // 이미지가 있는 경우 커스텀 마커 추가
+                addCustomMarkerToMap(location, placeName, imageUrl, 150, 200);  // 이미지 URL 전달
+            }
 
             if (i == 0) {
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 12));
             }
         }
     }
+
 
     private void clearPlaceMarkers() {
         // 기존의 장소 마커만 삭제

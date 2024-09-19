@@ -364,7 +364,7 @@ public class FindDestination extends AppCompatActivity implements OnMapReadyCall
                 }
             } else {
                 // 경로 로딩 실패 시 사용자에게 알림
-                Toast.makeText(FindDestination.this, "경로를 불러오는 중 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FindDestination.this, "해당 위치는 경로를 지원하지 않습니다..", Toast.LENGTH_SHORT).show();
             }
         }
     }

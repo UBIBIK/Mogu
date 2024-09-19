@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.mogu.R;
@@ -71,37 +72,48 @@ public class MypageFragment extends Fragment {
         withdrawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // SharedPreferences에서 사용자 정보 가져오기
-                UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
+                // 경고 대화상자 생성
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("회원탈퇴")
+                        .setMessage("정말로 회원탈퇴를 하시겠습니까? 이 작업은 되돌릴 수 없습니다.")
+                        .setPositiveButton("확인", (dialog, which) -> {
+                            // 사용자가 '확인'을 누르면 회원탈퇴 진행
+                            UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
 
-                // 서버에 회원탈퇴 요청
-                apiService.signout(userInfo).enqueue(new Callback<String>() {
-                    @Override
-                    public void onResponse(Call<String> call, Response<String> response) {
-                        if (response.isSuccessful()) {
-                            // 회원탈퇴 성공 시 처리
-                            sharedPreferencesHelper.clearUserInfo();
+                            // 서버에 회원탈퇴 요청
+                            apiService.signout(userInfo).enqueue(new Callback<String>() {
+                                @Override
+                                public void onResponse(Call<String> call, Response<String> response) {
+                                    if (response.isSuccessful()) {
+                                        // 회원탈퇴 성공 시 처리
+                                        sharedPreferencesHelper.clearUserInfo();
 
-                            // 로그인 화면으로 이동
-                            Intent intent = new Intent(getActivity(), MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            getActivity().finish(); // 현재 액티비티 종료
+                                        // 로그인 화면으로 이동
+                                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        startActivity(intent);
+                                        getActivity().finish(); // 현재 액티비티 종료
 
-                            // 회원탈퇴 성공 메시지 표시
-                            Toast.makeText(getActivity(), "회원탈퇴 되었습니다.", Toast.LENGTH_SHORT).show();
-                        } else {
-                            // 실패 시 처리
-                            Toast.makeText(getActivity(), "회원탈퇴 실패: 서버 오류", Toast.LENGTH_SHORT).show();
-                        }
-                    }
+                                        // 회원탈퇴 성공 메시지 표시
+                                        Toast.makeText(getActivity(), "회원탈퇴 되었습니다.", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        // 실패 시 처리
+                                        Toast.makeText(getActivity(), "그룹장은 회원탈퇴를 할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
 
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        // 네트워크 오류 등 처리
-                        Toast.makeText(getActivity(), "회원탈퇴 실패: 네트워크 오류", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                                @Override
+                                public void onFailure(Call<String> call, Throwable t) {
+                                    // 네트워크 오류 등 처리
+                                    Toast.makeText(getActivity(), "회원탈퇴 실패", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("취소", (dialog, which) -> {
+                            // 사용자가 '취소'를 누르면 아무 일도 하지 않음
+                            dialog.dismiss();
+                        })
+                        .show();
             }
         });
 

@@ -144,6 +144,7 @@ public class PlaceFragment extends Fragment {
         new FetchPlaceDataTask(requestUrl, query).execute();
     }
 
+
     private class FetchPlaceDataTask extends AsyncTask<Void, Void, ArrayList<TourApi>> {
         private String url;
         private String searchQuery;
@@ -178,7 +179,7 @@ public class PlaceFragment extends Fragment {
                 boolean tagMapy = false;
                 boolean tagContentTypeId = false;
 
-                String firstimage = "";
+                String firstimage = ""; // 이미지가 없는 경우 기본값
                 String title = "";
                 String addr1 = "";
                 String addr2 = "";
@@ -240,17 +241,25 @@ public class PlaceFragment extends Fragment {
                     } else if (eventType == XmlPullParser.END_TAG) {
                         if (xpp.getName().equals("item")) {
                             Log.d(TAG, "Item Title: " + title);
-                            // 카테고리 ID가 25가 아닌 경우만 추가
-                            if (contentTypeId != 25 && firstimage.contains("http")) {
+
+                            // contentTypeId가 25인 경우는 제외
+                            if (contentTypeId != 25) {
                                 boolean isMatch = searchQuery.isEmpty() || title.toLowerCase().contains(searchQuery.toLowerCase());
+
                                 if (isMatch) {
+                                    // 이미지가 없는 경우 기본 이미지 사용
+                                    if (firstimage.isEmpty()) {
+                                        firstimage = "URL_TO_DEFAULT_IMAGE"; // 기본 이미지 URL
+                                    }
+
                                     TourApi item = new TourApi(firstimage, title, addr1, addr2, contentid, mapx, mapy);
                                     itemList.add(item);
                                     Log.d(TAG, "Included Item: " + title);
                                 } else {
                                     Log.d(TAG, "Excluded Item: " + title);
                                 }
-                                Log.d(TAG, "Search Query: " + searchQuery);
+                            } else {
+                                Log.d(TAG, "Excluded Item due to contentTypeId 25: " + title);
                             }
                         }
                     }
@@ -289,4 +298,5 @@ public class PlaceFragment extends Fragment {
             Log.d(TAG, "Result List Size: " + result.size());
         }
     }
+
 }

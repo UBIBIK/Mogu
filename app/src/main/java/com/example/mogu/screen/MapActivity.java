@@ -86,6 +86,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
 
+    private String groupKey;
     private MapView mapView;
     private GoogleMap googleMap;
     private BottomSheetBehavior<FrameLayout> bottomSheetBehavior;
@@ -150,19 +151,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             ActivityCompat.requestPermissions(this, locationPermissions, LOCATION_PERMISSION_REQUEST_CODE);
         }
 
-        loadExistingPlaceData();
+        loadExistingPlaceData(groupKey);
         initializeBottomSheet();
         createDayButtons();
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
     }
 
-    private void loadExistingPlaceData() {
+    private void loadExistingPlaceData(String groupKey) {
         UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
 
         if (userInfo != null) {
+            // 그룹 키를 기반으로 해당 그룹의 일정만 불러옴
             for (GroupInfo group : userInfo.getGroupList()) {
-                if (group.getTripScheduleList() != null && !group.getTripScheduleList().isEmpty()) {
+                if (group.getGroupKey().equals(groupKey) && group.getTripScheduleList() != null && !group.getTripScheduleList().isEmpty()) {
                     TripScheduleInfo tripSchedule = group.getTripScheduleList().get(0);
                     for (TripScheduleDetails details : tripSchedule.getTripScheduleDetails()) {
                         PlaceData placeData = new PlaceData();
@@ -588,18 +590,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         UserInfo userInfo = sharedPreferencesHelper.getUserInfo();
         if (userInfo != null) {
             for (GroupInfo group : userInfo.getGroupList()) {
-                if (group.getTripScheduleList() != null && !group.getTripScheduleList().isEmpty()) {
-                    TripScheduleInfo tripSchedule = group.getTripScheduleList().get(0);
-                    for (TripScheduleDetails details : tripSchedule.getTripScheduleDetails()) {
-                        if (details.getDay().equals(day)) {
-                            details.setLocationInfo(new ArrayList<>(placeData.getLocationInfoList()));
-                            return;
+                if (group.getGroupKey().equals(groupKey)) {  // 그룹 키로 일정 확인
+                    if (group.getTripScheduleList() != null && !group.getTripScheduleList().isEmpty()) {
+                        TripScheduleInfo tripSchedule = group.getTripScheduleList().get(0);
+                        for (TripScheduleDetails details : tripSchedule.getTripScheduleDetails()) {
+                            if (details.getDay().equals(day)) {
+                                details.setLocationInfo(new ArrayList<>(placeData.getLocationInfoList()));
+                                return;
+                            }
                         }
+                        // 기존 일정이 없는 경우 새로운 일정 추가
+                        TripScheduleDetails newDetails = new TripScheduleDetails();
+                        newDetails.setDay(day);
+                        newDetails.setLocationInfo(new ArrayList<>(placeData.getLocationInfoList()));
+                        tripSchedule.getTripScheduleDetails().add(newDetails);
                     }
-                    TripScheduleDetails newDetails = new TripScheduleDetails();
-                    newDetails.setDay(day);
-                    newDetails.setLocationInfo(new ArrayList<>(placeData.getLocationInfoList()));
-                    tripSchedule.getTripScheduleDetails().add(newDetails);
                 }
             }
             sharedPreferencesHelper.saveUserInfo(userInfo);

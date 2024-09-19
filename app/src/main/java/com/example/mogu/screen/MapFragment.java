@@ -312,11 +312,13 @@ public class MapFragment extends Fragment {
 
     @SuppressLint({"MissingPermission", "ResourceType"})
     private void selectDayButton(Button button) {
+        // 이전에 선택된 버튼이 있다면 선택 해제
         if (selectedDayButton != null) {
             selectedDayButton.setSelected(false);
             selectedDayButton.setBackgroundResource(R.drawable.rounded_button_selected);
         }
 
+        // 현재 선택된 버튼 설정
         button.setSelected(true);
         button.setBackgroundResource(R.drawable.rounded_button_selected);
         button.setTextColor(getResources().getColorStateList(R.drawable.button_text_selected));
@@ -325,26 +327,28 @@ public class MapFragment extends Fragment {
         String day = selectedDayButton.getText().toString();
         PlaceData placeData = placesMap.get(day);
 
+        // 기존 마커 삭제
+        clearPlaceMarkers();
+
+        // 현재 선택된 날짜에 해당하는 장소 표시
         if (placeData != null) {
-            // PlaceListAdapter 생성 시 currentLocation 전달 필요 없음
-            placeListAdapter = new PlaceListAdapter(getContext(),placeData.getPlaceNames(), placeData.getNotes(), day, placeData.getLocations());
+            // PlaceListAdapter 생성
+            placeListAdapter = new PlaceListAdapter(getContext(), placeData.getPlaceNames(), placeData.getNotes(), day, placeData.getLocations());
             recyclerViewPlaces.setAdapter(placeListAdapter);
 
             if (googleMap != null) {
-                addMarkersToMap(placeData); // 장소 마커 추가
+                addMarkersToMap(placeData);  // 새로운 마커 추가
             }
-        }
-        else {
-            // PlaceListAdapter 생성 시 빈 리스트 사용
+        } else {
+            // PlaceListAdapter에 빈 리스트 설정
             placeListAdapter = new PlaceListAdapter(getContext(), new ArrayList<>(), new ArrayList<>(), day, new ArrayList<>());
             recyclerViewPlaces.setAdapter(placeListAdapter);
 
+            // 지도에 표시할 마커가 없으면 기존 마커만 제거
             if (googleMap != null) {
-                // 장소 마커만 제거
                 clearPlaceMarkers();
             }
         }
-
 
         // 내 위치도 함께 표시
         if (fusedLocationClient != null) {
@@ -366,44 +370,42 @@ public class MapFragment extends Fragment {
         }
     }
 
+
     private void addMarkersToMap(PlaceData placeData) {
-        clearPlaceMarkers(); // 기존 장소 마커만 제거
+        // 먼저 기존 마커를 모두 삭제합니다.
+        clearPlaceMarkers();
 
         List<LatLng> locations = placeData.getLocations();
         List<String> placeNames = placeData.getPlaceNames();
-        List<LocationInfo> locationInfos = placeData.getLocationInfoList(); // 추가
+        List<LocationInfo> locationInfos = placeData.getLocationInfoList();
 
+        // 새로운 장소마다 마커를 추가
         for (int i = 0; i < locations.size(); i++) {
             LatLng location = locations.get(i);
             String placeName = placeNames.get(i);
-            String imageUrl = locationInfos.get(i).getImage();  // 이미지 URL을 LocationInfo에서 가져옴
+            String imageUrl = locationInfos.get(i).getImage();  // 이미지 URL 가져오기
 
-            // 이미지 URL이 없는 경우 기본 빨간 마커 추가
-            if (imageUrl == null || imageUrl.isEmpty()) {
-                // 기본 빨간 마커 추가
-                Marker marker = googleMap.addMarker(new MarkerOptions()
-                        .position(location)
-                        .title(placeName));
-                placeMarkers.add(marker); // 장소 마커 리스트에 추가
-            } else {
-                // 이미지가 있는 경우 커스텀 마커 추가
-                addCustomMarkerToMap(location, placeName, imageUrl, 150, 200);  // 이미지 URL 전달
-            }
+            // 커스텀 마커를 지도에 추가
+            addCustomMarkerToMap(location, placeName, imageUrl, 150, 200);
 
+            // 첫 번째 장소에 맞춰 카메라 이동
             if (i == 0) {
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 12));
             }
         }
     }
 
-
     private void clearPlaceMarkers() {
-        // 기존의 장소 마커만 삭제
-        for (Marker marker : placeMarkers) {
-            marker.remove();
+        // 기존의 마커가 있으면 모두 제거
+        if (!placeMarkers.isEmpty()) {
+            for (Marker marker : placeMarkers) {
+                marker.remove(); // 지도에서 마커 제거
+            }
+            placeMarkers.clear(); // 리스트 비우기
         }
-        placeMarkers.clear(); // 리스트 비우기
     }
+
+
 
 
     private long getDateDifference(Calendar startDate, Calendar endDate) {
@@ -490,11 +492,16 @@ public class MapFragment extends Fragment {
         // Bitmap으로 변환된 마커를 Google Map에 추가
         Bitmap customMarkerBitmap = getCustomMarkerBitmap(markerView, markerWidth, markerHeight);
 
-        googleMap.addMarker(new MarkerOptions()
+        // 마커 추가
+        Marker marker = googleMap.addMarker(new MarkerOptions()
                 .position(location)
                 .title(placeName)
                 .icon(BitmapDescriptorFactory.fromBitmap(customMarkerBitmap)));
+
+        // 새로 추가한 마커를 placeMarkers 리스트에 추가
+        placeMarkers.add(marker);
     }
+
 
 
 

@@ -65,6 +65,12 @@ public class SignUp extends AppCompatActivity {
             return;
         }
 
+        // 이메일 형식이 올바른지 확인
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(SignUp.this, "유효한 이메일을 입력해주세요.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // 비밀번호와 비밀번호 확인이 일치하는지 확인
         if (!password.equals(confirmPassword)) {
             Toast.makeText(SignUp.this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show();

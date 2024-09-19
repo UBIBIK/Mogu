@@ -1,5 +1,6 @@
 package com.example.mogu.custom;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
@@ -33,9 +34,10 @@ public class CircularImageView extends AppCompatImageView {
         paint.setAntiAlias(true);
     }
 
+    @SuppressLint("DrawAllocation")
     @Override
     protected void onDraw(Canvas canvas) {
-        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        @SuppressLint("DrawAllocation") Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas bitmapCanvas = new Canvas(bitmap);
         super.onDraw(bitmapCanvas);
         shader = new BitmapShader(bitmap, BitmapShader.TileMode.CLAMP, BitmapShader.TileMode.CLAMP);

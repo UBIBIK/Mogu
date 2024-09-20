@@ -50,6 +50,23 @@
         android:inputType="phone"
         android:layout_marginBottom="16dp" />
 
+    <!-- 약관 동의 체크박스 -->
+    <CheckBox
+        android:id="@+id/agreeCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="개인정보 수집 및 이용에 동의합니다."
+        android:layout_marginBottom="20dp" />
+
+    <!-- 약관 보기 버튼 -->
+    <Button
+        android:id="@+id/showTermsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="약관 보기"
+        android:background="#ffffff"
+        android:layout_marginBottom="20dp" />
+
     <!-- 회원가입 버튼 -->
     <Button
         android:id="@+id/signupButton"
